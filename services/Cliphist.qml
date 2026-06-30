@@ -9,6 +9,7 @@ pragma Singleton
 // (Process + StdioCollector). One-shot Processes are created on demand from
 // Components and destroy themselves on exit so we never leak QProcess handles.
 
+import QtQuick
 import Quickshell
 import Quickshell.Io
 import "../modules/clipboard/logic.js" as Logic

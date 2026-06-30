@@ -10,6 +10,7 @@ pragma ComponentBehavior: Bound
 //
 // (mirrors the IpcHandler pattern in modules/areapicker/AreaPicker.qml.)
 
+import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.services
