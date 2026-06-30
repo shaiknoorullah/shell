@@ -9,6 +9,8 @@ import "modules/drawers"
 import "modules/background"
 import "modules/areapicker"
 import "modules/lock"
+import "modules/tasks"
+import qs.services
 import Quickshell
 
 ShellRoot {
@@ -25,6 +27,10 @@ ShellRoot {
 
     ConfigToasts {}
     Shortcuts {}
+    FocusPanel {}
+    Variants { model: Screens.screens; LeftBar {} }
+    TaskIpc {}
+    // Variants { model: Screens.screens; BottomBar {} }   // optional; enable later
     BatteryMonitor {}
     IdleMonitors {
         lock: lock
