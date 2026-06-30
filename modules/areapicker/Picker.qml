@@ -8,6 +8,8 @@ import Caelestia
 import qs.components
 import qs.components.effects
 import qs.services
+import qs.utils
+import "shot.js" as Shot
 
 MouseArea {
     id: root
@@ -71,14 +73,52 @@ MouseArea {
         }
     }
 
+    property string lastPath
+    property var grimCb
+    property string grimPath
+
+    // Swappable capture backend: native CUtils.saveItem (grabToImage) by default,
+    // grim fallback when CAELESTIA_SHOT_GRIM=1 (set this if the nixGL grab comes
+    // out black — see the Phase 2 risk gate).
+    function capture(r: rect, outPath: string, cb: var): void {
+        if (Quickshell.env("CAELESTIA_SHOT_GRIM") === "1") {
+            grimCb = cb;
+            grimPath = outPath;
+            grimProc.command = Shot.grimCommand({
+                x: r.x,
+                y: r.y,
+                w: r.width,
+                h: r.height
+            }, outPath);
+            grimProc.running = true;
+        } else {
+            CUtils.saveItem(screencopy, Qt.resolvedUrl(outPath), r, cb);
+        }
+    }
+
     function save(): void {
-        const tmpfile = Qt.resolvedUrl(`/tmp/caelestia-picker-${Quickshell.processId}-${Date.now()}.png`);
-        CUtils.saveItem(screencopy, tmpfile, Qt.rect(Math.ceil(rsx), Math.ceil(rsy), Math.floor(sw), Math.floor(sh)), path => {
+        const r = Qt.rect(Math.ceil(rsx), Math.ceil(rsy), Math.floor(sw), Math.floor(sh));
+        const outPath = Shot.shotPath(Date.now(), Paths.pictures);
+        capture(r, outPath, path => {
+            root.lastPath = path;
+
+            // OCR mode (pin phase): run tesseract on the saved capture, copy the
+            // recognised text to the clipboard and notify. No image copy/notify.
+            if (root.loader.ocr) {
+                Quickshell.execDetached(["sh", "-c", `tesseract '${path}' - --psm 6 | wl-copy && notify-send -a caelestia-cli 'OCR copied' "$(wl-paste | head -c 4000)"`]);
+                closeAnim.start();
+                return;
+            }
+
+            Quickshell.execDetached(["sh", "-c", `wl-copy --type image/png < '${path}'`]);
             if (root.loader.clipboardOnly) {
-                Quickshell.execDetached(["sh", "-c", "wl-copy --type image/png < " + path]);
-                Quickshell.execDetached(["notify-send", "-a", "caelestia-cli", "-i", path, "Screenshot taken", "Screenshot copied to clipboard"]);
+                Quickshell.execDetached(["notify-send", "-a", "caelestia-shell", "-i", path, "-h", `string:image-path:${path}`, "Screenshot copied", "Copied to clipboard"]);
             } else {
-                Quickshell.execDetached(["swappy", "-f", path]);
+                // Actionable notification routed via notifProc's stdout:
+                // open/edit/copy/delete come from Shot.notifyArgs; the extra "pin"
+                // action (pin phase) opens the capture in the pin module.
+                notifProc.command = Shot.notifyArgs(path, true).concat(["--action=pin=Pin"]);
+                notifProc.running = true;
             }
             closeAnim.start();
         });
@@ -99,6 +139,21 @@ MouseArea {
             clients = clients;
 
         opacity = 1;
+
+        // Fullscreen / focused-monitor fast path (shot phase): select the whole
+        // screen and trigger the screencopy capture immediately, skipping the
+        // interactive selection overlay.
+        if (loader.fullscreen) {
+            onClient = false;
+            sx = 0;
+            sy = 0;
+            ex = screen.width;
+            ey = screen.height;
+            overlay.visible = border.visible = false;
+            screencopy.visible = false;
+            screencopy.active = true;
+            return;
+        }
 
         const c = clients[0];
         if (c) {
@@ -215,7 +270,8 @@ MouseArea {
 
             onHasContentChanged: {
                 if (hasContent && !root.loader.freeze) {
-                    overlay.visible = border.visible = true;
+                    if (!root.loader.fullscreen)
+                        overlay.visible = border.visible = true;
                     root.save();
                 }
             }
@@ -269,6 +325,59 @@ MouseArea {
 
         Behavior on border.color {
             CAnim {}
+        }
+    }
+
+    // Cursor loupe (shot phase). Hidden in fullscreen mode and when the pointer
+    // is off the surface; best in freeze mode where screencopy is live.
+    Magnifier {
+        source: screencopy
+        cursorX: root.mouseX
+        cursorY: root.mouseY
+        regionX: root.rsx
+        regionY: root.rsy
+        regionW: root.sw
+        regionH: root.sh
+        screenWidth: root.screen.width
+        screenHeight: root.screen.height
+        visible: !root.loader.fullscreen && root.opacity > 0 && root.containsMouse
+    }
+
+    // grim fallback backend (CAELESTIA_SHOT_GRIM=1): fires the capture callback
+    // on successful exit.
+    Process {
+        id: grimProc
+
+        onExited: exitCode => {
+            // qmllint disable signal-handler-parameters
+            if (exitCode === 0 && root.grimCb)
+                root.grimCb(root.grimPath);
+            root.grimCb = null;
+        }
+    }
+
+    // Routes the activated notify-send action (printed on stdout) to its handler.
+    // edit -> native annotation editor (editor phase); pin -> pin module (pin phase).
+    Process {
+        id: notifProc
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const action = text.trim();
+                const p = root.lastPath;
+                if (!p)
+                    return;
+                if (action === "open")
+                    Quickshell.execDetached(["xdg-open", p]);
+                else if (action === "edit")
+                    Quickshell.execDetached(["caelestia-shell", "ipc", "call", "editor", "open", p]);
+                else if (action === "copy")
+                    Quickshell.execDetached(["wl-copy", p]);
+                else if (action === "delete")
+                    Quickshell.execDetached(["rm", p]);
+                else if (action === "pin")
+                    Quickshell.execDetached(["caelestia-shell", "ipc", "call", "pin", "open", p]);
+            }
         }
     }
 

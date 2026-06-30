@@ -14,6 +14,8 @@ Scope {
         property bool freeze
         property bool closing
         property bool clipboardOnly
+        property bool fullscreen
+        property bool ocr
 
         Variants {
             model: Screens.screens
@@ -52,6 +54,8 @@ Scope {
             root.freeze = false;
             root.closing = false;
             root.clipboardOnly = false;
+            root.fullscreen = false;
+            root.ocr = false;
             root.activeAsync = true;
         }
 
@@ -59,6 +63,8 @@ Scope {
             root.freeze = true;
             root.closing = false;
             root.clipboardOnly = false;
+            root.fullscreen = false;
+            root.ocr = false;
             root.activeAsync = true;
         }
 
@@ -66,6 +72,8 @@ Scope {
             root.freeze = false;
             root.closing = false;
             root.clipboardOnly = true;
+            root.fullscreen = false;
+            root.ocr = false;
             root.activeAsync = true;
         }
 
@@ -73,6 +81,28 @@ Scope {
             root.freeze = true;
             root.closing = false;
             root.clipboardOnly = true;
+            root.fullscreen = false;
+            root.ocr = false;
+            root.activeAsync = true;
+        }
+
+        // Screenshot the focused monitor, no interactive selection (shot phase).
+        function openFullscreen(): void {
+            root.freeze = false;
+            root.closing = false;
+            root.clipboardOnly = false;
+            root.fullscreen = true;
+            root.ocr = false;
+            root.activeAsync = true;
+        }
+
+        // Capture a region then OCR it to the clipboard (pin phase).
+        function openOcr(): void {
+            root.freeze = false;
+            root.closing = false;
+            root.clipboardOnly = false;
+            root.fullscreen = false;
+            root.ocr = true;
             root.activeAsync = true;
         }
 
@@ -88,6 +118,8 @@ Scope {
             root.freeze = false;
             root.closing = false;
             root.clipboardOnly = false;
+            root.fullscreen = false;
+            root.ocr = false;
             root.activeAsync = true;
         }
     }
@@ -101,6 +133,8 @@ Scope {
             root.freeze = true;
             root.closing = false;
             root.clipboardOnly = false;
+            root.fullscreen = false;
+            root.ocr = false;
             root.activeAsync = true;
         }
     }
@@ -114,6 +148,8 @@ Scope {
             root.freeze = false;
             root.closing = false;
             root.clipboardOnly = true;
+            root.fullscreen = false;
+            root.ocr = false;
             root.activeAsync = true;
         }
     }
@@ -127,6 +163,23 @@ Scope {
             root.freeze = true;
             root.closing = false;
             root.clipboardOnly = true;
+            root.fullscreen = false;
+            root.ocr = false;
+            root.activeAsync = true;
+        }
+    }
+
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "screenshotFullscreen"
+        description: "Screenshot focused monitor"
+        onPressed: {
+            root.freeze = false;
+            root.closing = false;
+            root.clipboardOnly = false;
+            root.fullscreen = true;
+            root.ocr = false;
             root.activeAsync = true;
         }
     }

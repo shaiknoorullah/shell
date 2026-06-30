@@ -24,6 +24,7 @@ ShellRoot {
     Background {}
     Drawers {}
     AreaPicker {}
+    ModePicker {}
     Clipboard {}
     Editor {}
     Pin {}
