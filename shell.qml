@@ -9,6 +9,7 @@ import "modules/drawers"
 import "modules/background"
 import "modules/areapicker"
 import "modules/clipboard"
+import "modules/editor"
 import "modules/lock"
 import "modules/tasks"
 import qs.services
@@ -23,6 +24,7 @@ ShellRoot {
     Drawers {}
     AreaPicker {}
     Clipboard {}
+    Editor {}
     Lock {
         id: lock
     }

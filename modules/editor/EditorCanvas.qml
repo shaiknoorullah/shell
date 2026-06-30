@@ -83,6 +83,10 @@ Item {
     readonly property real fitScale: (imgW > 0 && imgH > 0) ? Math.min(availW / imgW, availH / imgH, 1) : 1
 
     readonly property alias captureTarget: imageContainer
+    // Hide editor-only chrome (selection box, crop border/handles) during the
+    // export grab so it is not baked into the output PNG. Toggled by Editor.qml
+    // around CUtils.saveItem (grabToImage) and reset in the save callback.
+    property bool grabbing: false
 
     // --- crop (non-destructive). null => full image. ------------------------
     property var cropRect: null // normalised {x,y,x2,y2} in container coords
@@ -363,7 +367,7 @@ Item {
             id: selOverlay
 
             anchors.fill: parent
-            visible: root.selectedId !== ""
+            visible: root.selectedId !== "" && !root.grabbing
 
             readonly property var sel: visible ? (root.model.find(s => s.id === root.selectedId) ?? null) : null
             readonly property var b: sel ? EditorLogic.boundsOf(sel) : ({ x: 0, y: 0, x2: 0, y2: 0 })
@@ -385,7 +389,7 @@ Item {
         StyledRect {
             readonly property var c: root.cropRect ?? ({ x: 0, y: 0, x2: 0, y2: 0 })
 
-            visible: root.cropRect !== null
+            visible: root.cropRect !== null && !root.grabbing
             x: Math.min(c.x, c.x2)
             y: Math.min(c.y, c.y2)
             width: Math.abs(c.x2 - c.x)
@@ -469,7 +473,7 @@ Item {
 
         // crop corner handles (above the routing MouseArea so they win events)
         Repeater {
-            model: root.cropRect ? 4 : 0
+            model: (root.cropRect && !root.grabbing) ? 4 : 0
 
             delegate: Rectangle {
                 id: handle

@@ -68,7 +68,13 @@ Scope {
             // Primary backend: GPU grab of the annotated canvas. CUtils.saveItem
             // runs grabToImage + DPR scaling + rect crop + mkpath internally
             // (see plugin/src/Caelestia/cutils.cpp) — same path the picker uses.
-            CUtils.saveItem(canvas.captureTarget, Qt.resolvedUrl(out), canvas.exportRect(), savedPath => scope.postExport(savedPath));
+            // Hide editor-only chrome (selection box, crop border + handles) so it
+            // is not baked into the grabbed PNG; restore it in the save callback.
+            canvas.grabbing = true;
+            CUtils.saveItem(canvas.captureTarget, Qt.resolvedUrl(out), canvas.exportRect(), savedPath => {
+                canvas.grabbing = false;
+                scope.postExport(savedPath);
+            });
         }
     }
 
