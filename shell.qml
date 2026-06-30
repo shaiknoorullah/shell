@@ -10,6 +10,7 @@ import "modules/background"
 import "modules/areapicker"
 import "modules/clipboard"
 import "modules/editor"
+import "modules/pin"
 import "modules/lock"
 import "modules/tasks"
 import qs.services
@@ -25,6 +26,7 @@ ShellRoot {
     AreaPicker {}
     Clipboard {}
     Editor {}
+    Pin {}
     Lock {
         id: lock
     }
