@@ -1,15 +1,13 @@
+.pragma library
+
 // pin.js — pure logic for the pin-to-screen feature (Phase "pin").
 //
-// Dual-consumable (same convention as modules/areapicker/shot.js and
-// modules/editor/editor.js):
-//   - QML:  import "pin.js" as PinLogic   (Qt6 exposes the ES exports on the namespace)
-//             ... PinLogic.addPin(pins, path, PinLogic.nextId(pins)) ...
-//   - node: import { ... } from "./pin.js" (ESM, unit-tested with `node --test`)
-//
-// NOTE: intentionally NO `.pragma library` line. Under node v22 a leading
-// `.pragma library` directive is not valid ECMAScript and breaks ESM detection
-// (node falls back to CommonJS and the named imports fail). Omitting it lets node
-// auto-detect ESM while Qt 6 still imports an `export`-bearing .js as a module.
+// QML JavaScript "stateless library" resource: `.pragma library` on line 1 +
+// plain top-level `function` declarations — the documented Qt/Quickshell pattern
+// (same as modules/clipboard/logic.js). QML imports it with
+// `import "pin.js" as PinLogic` -> PinLogic.addPin(...), etc. It must NOT use ES
+// `export` (Quickshell's QML JS engine rejects it: "Unexpected token export").
+// The node test loads it by stripping the pragma and appending exports.
 //
 // All the array bookkeeping + geometry math lives here (rather than inline in the
 // QML) so it is deterministic and testable without a running compositor. The QML
@@ -22,7 +20,7 @@
  * @param {number} hi
  * @returns {number}
  */
-export function clamp(v, lo, hi) {
+function clamp(v, lo, hi) {
     if (hi < lo)
         return lo;
     if (v < lo)
@@ -40,7 +38,7 @@ export function clamp(v, lo, hi) {
  * @param {{id:number}[]} pins
  * @returns {number}
  */
-export function nextId(pins) {
+function nextId(pins) {
     let max = 0;
     for (const p of pins) {
         if (p && typeof p.id === "number" && p.id > max)
@@ -57,7 +55,7 @@ export function nextId(pins) {
  * @param {number} id
  * @returns {{id:number,path:string}[]}
  */
-export function addPin(pins, path, id) {
+function addPin(pins, path, id) {
     return [...pins, { id, path }];
 }
 
@@ -67,7 +65,7 @@ export function addPin(pins, path, id) {
  * @param {number} id
  * @returns {{id:number,path:string}[]}
  */
-export function removePin(pins, id) {
+function removePin(pins, id) {
     return pins.filter(p => p.id !== id);
 }
 
@@ -77,7 +75,7 @@ export function removePin(pins, id) {
  * @param {string} path
  * @returns {string}
  */
-export function stripFileScheme(path) {
+function stripFileScheme(path) {
     if (typeof path !== "string")
         return "";
     if (path.startsWith("file://localhost"))
@@ -96,7 +94,7 @@ export function stripFileScheme(path) {
  * @param {number} maxH
  * @returns {number} scale in (0, 1]
  */
-export function fitScale(natW, natH, maxW, maxH) {
+function fitScale(natW, natH, maxW, maxH) {
     if (!(natW > 0) || !(natH > 0) || !(maxW > 0) || !(maxH > 0))
         return 1;
     const s = Math.min(maxW / natW, maxH / natH, 1);
@@ -110,7 +108,7 @@ export function fitScale(natW, natH, maxW, maxH) {
  * @param {number} scale
  * @returns {{width:number,height:number}}
  */
-export function dimensions(natW, natH, scale) {
+function dimensions(natW, natH, scale) {
     return {
         width: Math.max(1, Math.round(natW * scale)),
         height: Math.max(1, Math.round(natH * scale))
@@ -130,7 +128,7 @@ export function dimensions(natW, natH, scale) {
  * @param {number} maxScale
  * @returns {number}
  */
-export function scaleFromCorner(pointerX, pointerY, natW, natH, minScale, maxScale) {
+function scaleFromCorner(pointerX, pointerY, natW, natH, minScale, maxScale) {
     if (!(natW > 0) || !(natH > 0))
         return minScale;
     const sx = pointerX / natW;
@@ -145,7 +143,7 @@ export function scaleFromCorner(pointerX, pointerY, natW, natH, minScale, maxSca
  * @param {number} [minOpacity=0.15]
  * @returns {number}
  */
-export function sliderToOpacity(v, minOpacity = 0.15) {
+function sliderToOpacity(v, minOpacity = 0.15) {
     const t = clamp(v, 0, 1);
     return minOpacity + t * (1 - minOpacity);
 }
@@ -157,7 +155,7 @@ export function sliderToOpacity(v, minOpacity = 0.15) {
  * @param {number} [minOpacity=0.15]
  * @returns {number} slider value in [0,1]
  */
-export function opacityToSlider(opacity, minOpacity = 0.15) {
+function opacityToSlider(opacity, minOpacity = 0.15) {
     if (1 - minOpacity <= 0)
         return 1;
     return clamp((opacity - minOpacity) / (1 - minOpacity), 0, 1);
@@ -173,7 +171,7 @@ export function opacityToSlider(opacity, minOpacity = 0.15) {
  * @param {number} screenH
  * @returns {{x:number,y:number}}
  */
-export function centerOffset(w, h, screenW, screenH) {
+function centerOffset(w, h, screenW, screenH) {
     return {
         x: Math.max(0, Math.round((screenW - w) / 2)),
         y: Math.max(0, Math.round((screenH - h) / 2))
@@ -194,7 +192,7 @@ export function centerOffset(w, h, screenW, screenH) {
  * @param {number} [keepVisible=64]
  * @returns {{x:number,y:number}}
  */
-export function clampPosition(x, y, w, h, screenW, screenH, keepVisible = 64) {
+function clampPosition(x, y, w, h, screenW, screenH, keepVisible = 64) {
     const maxX = Math.max(0, screenW - keepVisible);
     const maxY = Math.max(0, screenH - keepVisible);
     return {

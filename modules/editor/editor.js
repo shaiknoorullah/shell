@@ -1,13 +1,13 @@
+.pragma library
+
 // editor.js — pure logic for the caelestia annotation editor.
 //
-// Dual-consumable:
-//   - QML:  import "editor.js" as EditorLogic   (Qt6 exposes the ES exports on the namespace)
-//   - node: import { ... } from "./editor.js"   (ESM, unit-tested with `node --test`)
-//
-// NOTE: intentionally NO `.pragma library` line. Under node v22 a leading
-// `.pragma library` makes the file parse as CommonJS and the named ESM imports
-// fail ("Named export not found"). Omitting it lets node auto-detect ESM; these
-// helpers are pure / factory-based so QML per-import copies are harmless.
+// QML JavaScript "stateless library" resource: `.pragma library` on line 1 +
+// plain top-level `function` declarations — the documented Qt/Quickshell pattern
+// (same as modules/clipboard/logic.js). QML imports it with
+// `import "editor.js" as EditorLogic` -> EditorLogic.CommandStack(), etc. It must
+// NOT use ES `export` (Quickshell's QML JS engine rejects it). The node test
+// loads it by stripping the pragma and appending exports (see editor.test.mjs).
 //
 // Shape model object (superset; each tool uses the fields it needs):
 //   { id, type, x, y, x2, y2, points:[{x,y}], color, width, text, n }
@@ -208,4 +208,5 @@ function toMagickArgs(model, baseRect) {
     return args;
 }
 
-export { CommandStack, hitTest, arrowHead, nextStep, toMagickArgs, boundsOf };
+// Exports are appended at test-load time (see editor.test.mjs); in QML these
+// functions are reached via the import namespace, e.g. EditorLogic.CommandStack().

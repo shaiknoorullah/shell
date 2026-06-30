@@ -1,13 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import {
-    CommandStack,
-    hitTest,
-    arrowHead,
-    nextStep,
-    toMagickArgs,
-    boundsOf
-} from "./editor.js";
+import { readFileSync } from "node:fs";
+
+// editor.js is a QML `.pragma library` resource; load it the way logic.test.mjs
+// does (strip the directive, append ES exports, import as a data: module). String
+// concat — editor.js contains template literals, so wrapping it in one would
+// mis-parse its ${...}.
+const editorSrc = readFileSync(new URL("./editor.js", import.meta.url), "utf8").replace(/^\s*\.pragma\s+library\s*$/m, "");
+const { CommandStack, hitTest, arrowHead, nextStep, toMagickArgs, boundsOf } =
+    await import("data:text/javascript," + encodeURIComponent(editorSrc + "\nexport { CommandStack, hitTest, arrowHead, nextStep, toMagickArgs, boundsOf };"));
 
 // ---------------------------------------------------------------------------
 // CommandStack — undo/redo round trips

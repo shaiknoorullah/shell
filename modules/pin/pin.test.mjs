@@ -1,20 +1,13 @@
 // Unit tests for modules/pin/pin.js — run with:  node --test modules/pin/pin.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-    clamp,
-    nextId,
-    addPin,
-    removePin,
-    stripFileScheme,
-    fitScale,
-    dimensions,
-    scaleFromCorner,
-    sliderToOpacity,
-    opacityToSlider,
-    centerOffset,
-    clampPosition
-} from "./pin.js";
+import { readFileSync } from "node:fs";
+
+// pin.js is a QML `.pragma library` resource; load it the way logic.test.mjs does
+// (strip the directive, append ES exports, import as a data: module).
+const pinSrc = readFileSync(new URL("./pin.js", import.meta.url), "utf8").replace(/^\s*\.pragma\s+library\s*$/m, "");
+const { clamp, nextId, addPin, removePin, stripFileScheme, fitScale, dimensions, scaleFromCorner, sliderToOpacity, opacityToSlider, centerOffset, clampPosition } =
+    await import("data:text/javascript," + encodeURIComponent(pinSrc + "\nexport { clamp, nextId, addPin, removePin, stripFileScheme, fitScale, dimensions, scaleFromCorner, sliderToOpacity, opacityToSlider, centerOffset, clampPosition };"));
 
 test("clamp keeps value in range", () => {
     assert.equal(clamp(5, 0, 10), 5);

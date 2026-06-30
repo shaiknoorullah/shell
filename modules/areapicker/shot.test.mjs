@@ -3,15 +3,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import {
-    monitorRect,
-    clampRect,
-    shotPath,
-    notifyArgs,
-    grimGeometry,
-    grimCommand,
-    dirOf
-} from "./shot.js";
+import { readFileSync } from "node:fs";
+
+// shot.js is a QML `.pragma library` resource (that directive isn't valid
+// ECMAScript), so load it the way logic.test.mjs does: read the source, strip the
+// directive, append ES exports, import as a data: module. String concat (not a
+// template literal) so any backticks/${} in the source can't break the wrapper.
+const shotSrc = readFileSync(new URL("./shot.js", import.meta.url), "utf8").replace(/^\s*\.pragma\s+library\s*$/m, "");
+const { monitorRect, clampRect, shotPath, notifyArgs, grimGeometry, grimCommand, dirOf } =
+    await import("data:text/javascript," + encodeURIComponent(shotSrc + "\nexport { monitorRect, clampRect, shotPath, notifyArgs, grimGeometry, grimCommand, dirOf };"));
 
 test("monitorRect: scale 1 returns physical size as screen-local origin", () => {
     assert.deepEqual(monitorRect({ x: 100, y: 50, width: 2560, height: 1440, scale: 1 }), { x: 0, y: 0, w: 2560, h: 1440 });
