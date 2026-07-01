@@ -1,0 +1,43 @@
+name: Catppuccin Mocha
+
+fonts:
+  text: JetBrainsMono Nerd Font
+  icon: Material Symbols Rounded
+
+colors:
+  bg: "#11111b"
+  panel: "#181825"
+  panel_alt: "#1e1e2e"
+  surface: "#313244"
+  surface_alt: "#45475a"
+  border: "#585b70"
+  border_subtle: "#313244"
+
+  fg: "#cdd6f4"
+  dim: "#a6adc8"
+  muted: "#7f849c"
+  faint: "#6c7086"
+
+  accent: "#cba6f7"
+  accent_2: "#89dceb"
+  cursor: "#45475a"
+  selection: "#585b70"
+  matched: "#f9e2af"
+
+  mode_bg: "#cba6f7"
+  mode_fg: "#11111b"
+  statusbar: "#1e1e2e"
+  status_fg: "#a6adc8"
+
+  priority_high: "#f38ba8"
+  priority_medium: "#fab387"
+  priority_low: "#89dceb"
+  project: "#a6e3a1"
+  tag: "#89dceb"
+  due: "#f9e2af"
+  overdue: "#f38ba8"
+  today: "#fab387"
+  done: "#a6e3a1"
+  active: "#cba6f7"
+  warning: "#fab387"
+  error: "#f38ba8"

@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-# Forward quickshell IPC calls into the Arch distrobox where `qs` lives.
-# e.g. qs-ipc call leftbar toggle   (summon the left "what am I chasing" bar)
-# Forward the session runtime dir + wayland socket so `qs` finds the running
-# shell instance inside the container (else: "No running instances").
-exec "$HOME/.local/bin/distrobox" enter arch -- env \
-  XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
-  WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-1}" \
-  qs ipc "$@"

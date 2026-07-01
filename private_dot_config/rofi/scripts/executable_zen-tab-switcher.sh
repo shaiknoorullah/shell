@@ -44,7 +44,7 @@ selected=$(load_tabs | fzf \
     --preview-window=down:7:wrap \
     --color="$FZF_COLORS" \
     --bind="ctrl-d:execute-silent(bt close {1})+reload(bt list)" \
-    --bind="ctrl-y:execute-silent(echo {3} | xclip -selection clipboard)+abort" \
+    --bind="ctrl-y:execute-silent(echo {3} | wl-copy)+abort" \
     --no-multi \
     --info=inline \
     --tabstop=4 \

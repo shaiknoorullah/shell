@@ -22,8 +22,8 @@ center — all in hard **Dracula**.
   bottom context/stats bar, a summoned left "what am I chasing" drawer, and an
   End-4-inspired right system panel.
 - **Focus engine** — taskwarrior + timewarrior + prayer-scaffolded Flowtime; a
-  multi-page **focus/task panel** (`Super+Shift+Return`) to start blocks and
-  manage every task field, fully keyboard-navigable.
+  single-screen **task command center** (`Super+Shift+Return`) to start blocks
+  and manage task fields without touching the mouse.
 
 ## Model
 
@@ -48,7 +48,7 @@ through. The QML config (`private_dot_config/quickshell/`) renders on the host
 Hyprland as layer-shell surfaces.
 
 - `~/.local/bin/quickshell-setup` — reproducibly (re)creates the Arch box and
-  installs `quickshell` + Qt6 + `task`/`timew`/`jq`/`playerctl`/`grim`.
+  installs `quickshell` + Qt6 + `task`/`timew`/`jq`/`playerctl`/`grim`/`python-yaml`.
 - `~/.local/bin/quickshell-launch` — launches it (wired into `hyprland.lua`
   autostart); `qs-ipc` forwards IPC into the container.
 - **Host bridge:** the container's taskwarrior 3.x can't read the host's 2.6.2
@@ -61,10 +61,16 @@ Hyprland as layer-shell surfaces.
 - **Prayer-scaffolded Flowtime** — offline prayer times (adhanpy, Hanafi,
   Hyderabad) using **Iqamah** (congregation) times; deep blocks count *up* and
   never scold (`adhd-focus.sh`, `adhd-prayer-times.sh`).
-- **Focus/task panel** (`Super+Shift+Return`) — multi-page: Focus (quick
-  start/search), Tasks (filterable list), Detail (edit every field), Projects,
-  Tags, Reports. Keyboard: `Tab`/`1–5` switch pages, `↑↓`/`jk` move, `Enter`
-  acts, `Esc` closes.
+- **Task command center** (`Super+Shift+Return`) — Tuxedo-inspired single
+  surface: filters left, task list center, detail/active block right, mode/status
+  bar bottom. Keyboard: `↑↓` move, `Enter` starts selected block, `n` creates +
+  starts, `e` edits, `x` completes, `s` starts/stops, `dd` deletes with
+  confirmation, `/` searches, `:` opens the command palette, `?` shows help.
+  `Esc` clears overlay/search/filter before closing.
+- **Task UI config** — `~/.config/quickshell/task-ui.yaml` selects YAML profiles
+  in `~/.config/quickshell/task-ui/themes/` and `.../keybinds/`. The helper
+  `qs-task-ui-config.sh` normalizes YAML to JSON for QML, so full palettes
+  (Dracula, Catppuccin, custom) and keybinds are user-editable.
 - **Left drawer** (`Super+A`) — BIG live block timer, salah runway, task list.
 - **Right system panel** — click the top-right pill, or run
   `qs-ipc call quickpanel toggle`. Layout follows End-4's right sidebar pattern:
@@ -118,6 +124,15 @@ updates. Fonts: **JetBrainsMono Nerd Font** for shell text, **Material Symbols
 Rounded** for quickshell UI icons, Noto for CJK/emoji. GTK/app icons remain
 separate: rofi currently uses **Adwaita** via `icon-theme`.
 
+The task command center has its own runtime YAML theme profiles so you can test
+full palettes without editing QML:
+
+```yaml
+# ~/.config/quickshell/task-ui.yaml
+theme: task-ui/themes/catppuccin-mocha.yaml
+keybinds: task-ui/keybinds/default.yaml
+```
+
 ## Secrets
 
 API keys live in `~/.secrets` (sourced by `~/.zshrc`), **age-encrypted** by
@@ -131,7 +146,8 @@ back it up to your password manager** (losing it = unrecoverable secrets).
 - ✅ **quickshell 3-bar shell** — top/bottom/left bars, Dynamic Island (real
   cover art), right system panel, live data via native services/host bridges.
 - ✅ **ADHD focus loop** — prayer-scaffolded Flowtime, live BIG timer.
-- ✅ **Focus/task panel** — multi-page taskwarrior front-end, full keyboard nav.
+- ✅ **Task command center** — keyboard-first taskwarrior/timewarrior surface,
+  YAML-configurable palette/keybinds, command palette and help overlay.
 - ⏭️ Next — master AI agent (model-switching), VPS data plane, work integrations,
   visual polish.
 

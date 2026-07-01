@@ -64,21 +64,23 @@ Commit only when asked; end commit msgs with the Co-Authored-By trailer. Push on
   hover-peek/click-pin) · clickable clock/system pill; bottom = gamified stats;
   left drawer (`Super+A`) = BIG live focus timer + salah runway + tasks; right
   panel = End-4-style quick toggles/sliders · notifications · calendar.
-- **FocusPanel** (`bar/FocusPanel.qml`) — multi-page taskwarrior front-end, a real
-  **FloatingWindow** (Hyprland draws its border/rounding/shadow/blur; windowrules
-  match `title:focus-panel` → float/center/size/stay_focused). `Super+Shift+Return`
-  → `qs ipc call panel focus`. Pages (`bar/pages/`): Focus (quick block start),
-  Tasks, Detail (edit every field), Projects, Tags, Reports. Full keyboard nav:
-  Tab/Shift+Tab cycle, 1-5 jump, ↑↓/jk move, Enter act, Esc close/back. Pages built
-  by two parallel workflows then integrated. Contract in `bar/pages/PAGE_CONTRACT.md`.
+- **FocusPanel** (`bar/FocusPanel.qml`) — now a Tuxedo-inspired task command center,
+  not a tabbed page shell. It is a real **FloatingWindow** (Hyprland windowrules still
+  match `title:focus-panel`). `Super+Shift+Return` → `qs ipc call panel focus`.
+  Layout: filters left, task list center, selected task + active Timewarrior block
+  right, status/mode bar bottom. Keyboard: `↑↓`, `Enter`, `n`, `e`, `x`, `s`, `dd`,
+  `p`, `r`, `+`, `t`, `m`, `/`, `:`, `fp`, `ft`, `fs`, `?`, `Esc`, `q`.
+  The command palette and help overlay render their key labels from YAML.
 - **WallpaperPicker** (`bar/WallpaperPicker.qml`) — FloatingWindow thumbnail grid of
   `~/walls` (117 imgs, collection filter chips). `Super+Shift+W` → `qs ipc call
   wallpaper open`. `wall.sh` = swww manager (set/random/next/prev/restore/list,
   persists to `~/.cache/wall`).
 - Services (`services/`, auto-registered singletons): `Tasks` (all/done/projects/
-  tags from host snapshot), `TaskActions` (write API via host bridge), `PanelState`
-  (nav + sel + IPC), `BarState` (open/close + IPC), `Wall`, `Theme` (Dracula),
-  `Focus`/`ActiveTask`/`Salah`/`Players`/`Ctx`/`Stats`/etc.
+  tags from host snapshot), `TaskActions` (write API via host bridge, plus
+  host-side stop block), `TaskUiConfig` (YAML theme/keybind profiles normalized by
+  `qs-task-ui-config.sh`), `PanelState` (legacy IPC), `BarState` (open/close + IPC),
+  `Wall`, `Theme` (global Dracula), `Focus`/`ActiveTask`/`Salah`/`Players`/`Ctx`/
+  `Stats`/etc.
 - Icon convention: quickshell text uses `Theme.fontMono`; shell/UI icons use
   `MaterialIcon { text: "material_symbol_name" }`. Rofi/app launcher icons are
   separate GTK icons and currently use Adwaita.
@@ -104,6 +106,12 @@ Host snapshot for reads: `adhd-tasks-export.sh` writes `~/.cache/adhd/{tasks,don
 (Flowtime, no pomodoro), prayer-scaffolded by **Iqamah** times (Hanafi, Hyderabad;
 `adhd-prayer-times.sh`). taskwarrior 2.6.2 + timewarrior + on-modify hook + `adhd-focus.sh`.
 
+Task command center config:
+- Active file: `~/.config/quickshell/task-ui.yaml`
+- Theme profiles: `~/.config/quickshell/task-ui/themes/{dracula,catppuccin-mocha}.yaml`
+- Keybind profile: `~/.config/quickshell/task-ui/keybinds/default.yaml`
+- Loader: `~/.local/bin/qs-task-ui-config.sh` → JSON for `TaskUiConfig.qml`
+
 ## System state
 - **nvidia RTX 4090**: driver 595-open, GPU rendering (was the "slowness"). Auto-loads.
 - **hyprlock** (`Super+Escape`) Dracula lock + **hypridle** auto-lock (10m lock, 12m
@@ -120,9 +128,8 @@ Host snapshot for reads: `adhd-tasks-export.sh` writes `~/.cache/adhd/{tasks,don
    was deciding: keep global translucency vs. opaque-exception content apps
    (zen/slack/teams/obsidian read busy with wallpaper bleed). **Ask which direction,
    then add `hl.window_rule({ match={class="…"}, opaque=true })` rules.**
-2. `Theme.comment` (#585880) is too low-contrast — swept the FocusPanel + FocusPage
-   labels to `subtext0`, but the workflow-built pages (Tasks/Projects/Tags/Reports)
-   still have dim `comment` headers/hints. Do a one-pass sweep if more reads badly.
+2. The old `bar/pages/*.qml` files are no longer loaded by `FocusPanel`; keep them
+   only as historical reference until the new command center has settled.
 3. Hyprland 0.55 **dim** is broken (`dim_inactive` removed; `dim_around` rule renders
    weakly) — the focus panel has no strong modal darken. Find 0.55's replacement if wanted.
 4. Bigger features still queued (from the design spec): **master AI agent** in the

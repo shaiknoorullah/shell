@@ -78,12 +78,12 @@ case "$chosen" in
     "$lock")
         # Lock the screen with a solid color matching the Catppuccin Mocha
         # base color (#1E1E2E) so the lock screen blends with the theme.
-        i3lock -c 1E1E2E
+        hyprlock
         ;;
     "$suspend")
         systemctl suspend
         ;;
     "$logout")
-        confirm_action "Logout?" && i3-msg exit
+        confirm_action "Logout?" && hyprctl dispatch exit
         ;;
 esac

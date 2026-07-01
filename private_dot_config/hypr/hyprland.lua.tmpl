@@ -7,6 +7,7 @@
 
 local mod  = "SUPER"
 local rofi = "$HOME/.config/rofi/scripts"   -- $HOME expands in the exec shell
+local cs   = "$HOME/.nix-profile/bin/caelestia-shell"  -- host caelestia (distrobox quickshell removed)
 
 -- ── Environment (nvidia) ───────────────────────────────────────────────
 hl.env("LIBVA_DRIVER_NAME", "nvidia")
@@ -96,6 +97,7 @@ hl.window_rule({ match = { class = "^(zen-tab-switcher)$" },                    
 -- ── Layer rules: real glass on bars (compositor blur) ──────────────────
 hl.layer_rule({ match = { namespace = "waybar" },     blur = true })
 hl.layer_rule({ match = { namespace = "quickshell-.*" }, blur = true, ignore_alpha = 0.1 })
+hl.layer_rule({ match = { namespace = "caelestia-clipboard" }, blur = true, ignore_alpha = 0.2 })  -- frosted-glass clipboard overlay
 
 -- The focus panel is a real floating window — float + center it; Hyprland's
 -- window border/rounding/shadow/blur (decoration{}) apply automatically.
@@ -104,6 +106,7 @@ hl.window_rule({ match = { title = "^(focus-panel)$" }, center = true })
 hl.window_rule({ match = { title = "^(focus-panel)$" }, size = "900 600" })
 hl.window_rule({ match = { title = "^(focus-panel)$" }, dim_around = true })    -- modal dim
 hl.window_rule({ match = { title = "^(focus-panel)$" }, stay_focused = true })  -- grab focus (keyboard + dim)
+hl.window_rule({ match = { title = "^(focus-panel)$" }, opaque = true })        -- de-faint: exempt from global opacity
 
 -- Wallpaper picker widget — same floating/centered/focused treatment.
 hl.window_rule({ match = { title = "^(wallpaper-picker)$" }, float = true })
@@ -115,14 +118,15 @@ hl.layer_rule({ match = { namespace = "rofi" },       blur = true, ignore_alpha 
 
 -- ── Autostart ──────────────────────────────────────────────────────────
 hl.on("hyprland.start", function()
-  hl.exec_cmd("~/.local/bin/quickshell-launch")               -- 3-bar shell (quickshell via distrobox/Arch)
-  hl.exec_cmd("~/.local/bin/wall.sh restore")                 -- swww + restore saved wallpaper
-  hl.exec_cmd("dunst")
+  hl.exec_cmd("~/.nix-profile/bin/caelestia-shell")           -- caelestia shell (Nix, nixGL-wrapped); owns wallpaper + notifications
+  -- (old quickshell-launch + swww wall.sh + dunst removed — caelestia replaces all three)
   hl.exec_cmd("hypridle")                                     -- idle → lock/screen-off
   hl.exec_cmd("nm-applet --indicator")
   hl.exec_cmd("systemctl --user start hyprpolkitagent.service")
   hl.exec_cmd("wl-paste --type text  --watch cliphist store")
   hl.exec_cmd("wl-paste --type image --watch cliphist store")
+  hl.exec_cmd("wl-paste --type text  --watch $HOME/.config/caelestia/scripts/clip-meta-record.sh")  -- clip metadata sidecar (ts/app)
+  hl.exec_cmd("wl-paste --type image --watch $HOME/.config/caelestia/scripts/clip-meta-record.sh")
   -- pinned apps (rules above place them on their workspaces)
   hl.exec_cmd("kitty")
   hl.exec_cmd("zen-browser")
@@ -142,10 +146,10 @@ hl.bind(mod .. " + Tab",       hl.dsp.exec_cmd(rofi .. "/rofilaunch.sh w"))
 hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd(rofi .. "/rofilaunch.sh --run"))
 hl.bind(mod .. " + SHIFT + F", hl.dsp.exec_cmd(rofi .. "/rofilaunch.sh f"))
 hl.bind(mod .. " + SHIFT + D", hl.dsp.exec_cmd(rofi .. "/rofi-style-selector.sh"))
-hl.bind(mod .. " + C",         hl.dsp.exec_cmd(rofi .. "/rofi-clipboard.sh"))
+hl.bind(mod .. " + C",         hl.dsp.exec_cmd(cs .. " ipc call clipboard toggle"))  -- caelestia clipboard
 hl.bind(mod .. " + SHIFT + B", hl.dsp.exec_cmd(rofi .. "/rofi-bluetooth.sh"))
-hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("~/.local/bin/qs-ipc call wallpaper open"))  -- wallpaper widget
-hl.bind("Print",               hl.dsp.exec_cmd(rofi .. "/rofi-screenshot.sh"))
+hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd(cs .. " ipc call drawers toggle launcher"))  -- caelestia launcher / wallpaper
+hl.bind("Print",               hl.dsp.exec_cmd(cs .. " ipc call picker open"))  -- caelestia region screenshot
 hl.bind(mod .. " + CTRL + S",  hl.dsp.exec_cmd(rofi .. "/rofi-systemd.sh"))
 hl.bind(mod .. " + slash",     hl.dsp.exec_cmd(rofi .. "/rofi-websearch-v2.sh"))
 hl.bind(mod .. " + P",         hl.dsp.exec_cmd(rofi .. "/rofi-projects.sh"))
@@ -161,7 +165,7 @@ hl.bind(mod .. " + SHIFT + E", hl.dsp.exec_cmd(rofi .. "/rofi-power.sh"))
 hl.bind(mod .. " + SHIFT + A",      hl.dsp.exec_cmd("~/.local/bin/adhd-capture.sh"))
 hl.bind(mod .. " + SHIFT + X",      hl.dsp.exec_cmd("~/.local/bin/adhd-focus.sh status"))
 hl.bind(mod .. " + SHIFT + Return", hl.dsp.exec_cmd("~/.local/bin/adhd-start.sh"))
-hl.bind(mod .. " + A",              hl.dsp.exec_cmd("~/.local/bin/qs-ipc call leftbar toggle"))  -- summon left "chasing" bar
+hl.bind(mod .. " + A",              hl.dsp.exec_cmd(cs .. " ipc call leftbar toggle"))  -- summon left "chasing" bar (caelestia)
 
 -- Media keys (locked = work on lockscreen; repeating = hold to repeat)
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("pactl set-sink-volume @DEFAULT_SINK@ +5%"), { repeating = true })
