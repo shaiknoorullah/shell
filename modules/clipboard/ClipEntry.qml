@@ -24,7 +24,7 @@ Item {
     property string thumb: ""
     // True when the entry looks like a secret (token/password/key). Masked in the
     // list (lock icon); ↵ still copies the real value (copy uses raw, not display).
-    readonly property bool sensitive: Logic.detectSensitive(modelData.preview, "")
+    readonly property bool sensitive: Logic.detectSensitive(modelData.preview, "") || ClipMeta.markedSensitive(modelData.raw)
     readonly property string displayText: root.sensitive ? Logic.maskSecret(modelData.preview) : modelData.preview
 
     signal activated(int index)

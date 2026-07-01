@@ -123,6 +123,10 @@ Item {
             if (root.current)
                 ClipPins.toggle(root.current.raw, root.current.preview);
             event.accepted = true;
+        } else if (ctrl && k === Qt.Key_S) {
+            if (root.current)
+                ClipMeta.setMarked(root.current.raw, !ClipMeta.markedSensitive(root.current.raw));
+            event.accepted = true;
         } else if (ctrl && k === Qt.Key_O) {
             if (root.current && Logic.detectType(root.current.preview) === "link")
                 Quickshell.execDetached(["xdg-open", root.current.preview.trim()]);
