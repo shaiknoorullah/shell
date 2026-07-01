@@ -22,6 +22,10 @@ Item {
     readonly property bool current: ListView.isCurrentItem
     // Resolved lazily for image entries (cliphist decode -> /tmp thumbnail).
     property string thumb: ""
+    // True when the entry looks like a secret (token/password/key). Masked in the
+    // list (lock icon); ↵ still copies the real value (copy uses raw, not display).
+    readonly property bool sensitive: Logic.detectSensitive(modelData.preview, "")
+    readonly property string displayText: root.sensitive ? Logic.maskSecret(modelData.preview) : modelData.preview
 
     signal activated(int index)
 
@@ -99,8 +103,8 @@ Item {
 
             MaterialIcon {
                 anchors.centerIn: parent
-                visible: root.type !== "image" && root.type !== "color"
-                text: root.iconName(root.type)
+                visible: root.sensitive || (root.type !== "image" && root.type !== "color")
+                text: root.sensitive ? "lock" : root.iconName(root.type)
                 color: root.current ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
                 fontStyle: Tokens.font.icon.medium
             }
@@ -110,11 +114,11 @@ Item {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignVCenter
 
-            text: root.modelData.preview
+            text: root.displayText
             elide: Text.ElideRight
             maximumLineCount: 1
-            font: root.type === "code" ? Tokens.font.mono.small : Tokens.font.body.medium
-            color: root.current ? Colours.palette.m3onSurface : Colours.palette.m3onSurfaceVariant
+            font: root.type === "code" && !root.sensitive ? Tokens.font.mono.small : Tokens.font.body.medium
+            color: root.sensitive ? Colours.palette.m3outline : (root.current ? Colours.palette.m3onSurface : Colours.palette.m3onSurfaceVariant)
         }
 
         MaterialIcon {
