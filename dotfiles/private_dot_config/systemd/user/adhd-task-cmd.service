@@ -1,5 +1,5 @@
 [Unit]
-Description=Execute taskwarrior commands queued by the quickshell task panel
+Description=Execute taskwarrior commands queued by the caelestia task panel
 
 [Service]
 Type=oneshot

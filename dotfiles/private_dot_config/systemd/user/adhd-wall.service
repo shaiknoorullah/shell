@@ -1,5 +1,5 @@
 [Unit]
-Description=Set the wallpaper requested by the quickshell wallpaper widget
+Description=Set the wallpaper requested by the caelestia wallpaper widget
 
 [Service]
 Type=oneshot

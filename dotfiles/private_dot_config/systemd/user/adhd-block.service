@@ -1,5 +1,5 @@
 [Unit]
-Description=Execute an ADHD focus-block start requested by the quickshell drawer
+Description=Execute an ADHD focus-block start requested by the caelestia drawer
 
 [Service]
 Type=oneshot
