@@ -1,11 +1,12 @@
 pragma ComponentBehavior: Bound
 
-// The clipboard overlay's content: a centred card with a fuzzy search field,
-// type-filter chips, the entry list (left) and a live preview (right). The search
-// field owns keyboard focus; plain typing filters, while modified keys drive
-// navigation and actions (copy / pin / delete / wipe / quick-pick / open-link).
+// v2 clipboard overlay content — a compact, scan-first popup.
 //
-// Mounted per-screen by modules/utils/Overlay.qml via Clipboard.qml.
+// The LIST is the hero: no permanent preview pane (the v1 dead panel is gone),
+// pins sort to the top (marked with 📌 by ClipEntry). Search is a thin line, not
+// a bar. The type filter is cycled with Tab (shown as a small tag) instead of a
+// chip row. Footer hints use a readable colour. Rich preview / edit / secret
+// masking land in follow-up increments (see the clipboard-v2 plan).
 
 import QtQuick
 import QtQuick.Layouts
@@ -26,8 +27,8 @@ Item {
     property string filter: "all"
     property int index: 0
 
-    // Reactive model: re-evaluates when query/filter/Cliphist.entries/ClipPins.pins
-    // change (all read during evaluation, so QML tracks them as dependencies).
+    readonly property var filters: ["all", "text", "image", "link"]
+
     readonly property var model: root.filterModel()
     readonly property int clampedIndex: Math.max(0, Math.min(index, model.length - 1))
     readonly property var current: model.length ? model[clampedIndex] : null
@@ -54,8 +55,13 @@ Item {
         return Logic.fuzzy(root.query, m, e => e.preview);
     }
 
-    // Centralised key handling so plain characters keep flowing to the search field
-    // (we only accept the events we actually handle).
+    function cycleFilter(dir: int): void {
+        const i = root.filters.indexOf(root.filter);
+        const n = root.filters.length;
+        root.filter = root.filters[(i + dir + n) % n];
+    }
+
+    // Central key handling; plain characters keep flowing to the search field.
     function handleKey(event: var): void {
         const mod = event.modifiers;
         const ctrl = (mod & Qt.ControlModifier) !== 0;
@@ -66,19 +72,23 @@ Item {
         if (k === Qt.Key_Escape) {
             root.requestClose();
             event.accepted = true;
-        } else if (k === Qt.Key_Down) {
+        } else if (k === Qt.Key_Down || (ctrl && k === Qt.Key_J)) {
             root.index = Math.min(root.clampedIndex + 1, n - 1);
             event.accepted = true;
-        } else if (k === Qt.Key_Up) {
+        } else if (k === Qt.Key_Up || (ctrl && k === Qt.Key_K)) {
             root.index = Math.max(root.clampedIndex - 1, 0);
             event.accepted = true;
         } else if (k === Qt.Key_Return || k === Qt.Key_Enter) {
-            // Shift+Return = paste-as-plain; cliphist stores text already, so v1
-            // behaves like a normal copy (documented limitation).
             if (root.current) {
                 Cliphist.copy(root.current.raw);
                 root.requestClose();
             }
+            event.accepted = true;
+        } else if (k === Qt.Key_Tab) {
+            root.cycleFilter(1);
+            event.accepted = true;
+        } else if (k === Qt.Key_Backtab) {
+            root.cycleFilter(-1);
             event.accepted = true;
         } else if (ctrl && shift && k === Qt.Key_Delete) {
             Cliphist.wipe();
@@ -126,8 +136,8 @@ Item {
         id: card
 
         anchors.centerIn: parent
-        width: Math.min(1000, parent.width * 0.75)
-        height: Math.min(680, parent.height * 0.8)
+        width: Math.min(440, parent.width * 0.5)
+        height: Math.min(560, parent.height * 0.72)
         radius: Tokens.rounding.large
         color: Colours.palette.m3surface
 
@@ -139,124 +149,87 @@ Item {
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: Tokens.padding.large
-            spacing: Tokens.spacing.medium
+            spacing: Tokens.spacing.small
 
-            // --- search --------------------------------------------------
+            // --- thin search line -----------------------------------------
             StyledRect {
                 Layout.fillWidth: true
                 color: Colours.layer(Colours.palette.m3surfaceContainer, 2)
                 radius: Tokens.rounding.full
-                implicitHeight: Math.max(searchIcon.implicitHeight, search.implicitHeight) + Tokens.padding.small * 2
+                implicitHeight: search.implicitHeight + Tokens.padding.small * 2
 
-                MaterialIcon {
-                    id: searchIcon
-
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.left: parent.left
+                RowLayout {
+                    anchors.fill: parent
                     anchors.leftMargin: Tokens.padding.large
-                    text: "content_paste_search"
-                    color: Colours.palette.m3onSurfaceVariant
-                }
+                    anchors.rightMargin: Tokens.padding.medium
+                    spacing: Tokens.spacing.small
 
-                StyledTextField {
-                    id: search
-
-                    anchors.left: searchIcon.right
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.leftMargin: Tokens.spacing.small
-                    anchors.rightMargin: Tokens.padding.large
-
-                    focus: true
-                    placeholderText: qsTr("Search clipboard…")
-                    onTextChanged: root.query = text
-                    Component.onCompleted: forceActiveFocus()
-                    Keys.onPressed: event => root.handleKey(event)
-                }
-            }
-
-            // --- filter chips --------------------------------------------
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: Tokens.spacing.small
-
-                Repeater {
-                    model: ["all", "text", "image", "link"]
-
-                    TextButton {
-                        required property string modelData
-
-                        type: TextButton.Tonal
-                        checked: root.filter === modelData
-                        text: modelData.charAt(0).toUpperCase() + modelData.slice(1)
-                        onClicked: root.filter = modelData
+                    MaterialIcon {
+                        text: "search"
+                        color: Colours.palette.m3onSurfaceVariant
                     }
-                }
 
-                Item {
-                    Layout.fillWidth: true
-                }
+                    StyledTextField {
+                        id: search
 
-                StyledText {
-                    text: `${root.model.length}`
-                    color: Colours.palette.m3outline
-                    font: Tokens.font.mono.small
-                }
-            }
+                        Layout.fillWidth: true
+                        focus: true
+                        placeholderText: qsTr("Search…")
+                        onTextChanged: root.query = text
+                        Component.onCompleted: forceActiveFocus()
+                        Keys.onPressed: event => root.handleKey(event)
+                    }
 
-            // --- list + preview ------------------------------------------
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                spacing: Tokens.spacing.medium
-
-                Item {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-
-                    ClipList {
-                        id: list
-
-                        anchors.fill: parent
-                        entries: root.model
-                        currentIndex: root.clampedIndex
-                        onActivated: i => {
-                            root.index = i;
-                            if (root.model[i])
-                                Cliphist.copy(root.model[i].raw);
-                            root.requestClose();
-                        }
+                    // active filter tag (Tab cycles it)
+                    StyledText {
+                        visible: root.filter !== "all"
+                        text: root.filter
+                        color: Colours.palette.m3primary
+                        font: Tokens.font.mono.small
                     }
 
                     StyledText {
-                        anchors.centerIn: parent
-                        visible: root.model.length === 0
-                        text: qsTr("No clipboard entries")
+                        text: `${root.model.length}`
                         color: Colours.palette.m3outline
-                    }
-                }
-
-                StyledRect {
-                    Layout.preferredWidth: Math.round(card.width * 0.4)
-                    Layout.fillHeight: true
-                    radius: Tokens.rounding.large
-                    color: Colours.layer(Colours.palette.m3surfaceContainer, 1)
-
-                    ClipPreview {
-                        anchors.fill: parent
-                        anchors.margins: Tokens.padding.small
-                        entry: root.current
+                        font: Tokens.font.mono.small
                     }
                 }
             }
 
-            // --- footer hint ---------------------------------------------
+            // --- the list (hero) — full width, no preview pane -------------
+            Item {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                ClipList {
+                    id: list
+
+                    anchors.fill: parent
+                    entries: root.model
+                    currentIndex: root.clampedIndex
+                    onActivated: i => {
+                        root.index = i;
+                        if (root.model[i])
+                            Cliphist.copy(root.model[i].raw);
+                        root.requestClose();
+                    }
+                }
+
+                StyledText {
+                    anchors.centerIn: parent
+                    visible: root.model.length === 0
+                    text: qsTr("No clipboard entries")
+                    color: Colours.palette.m3outline
+                }
+            }
+
+            // --- readable footer hints ------------------------------------
             StyledText {
                 Layout.fillWidth: true
                 elide: Text.ElideRight
-                color: Colours.palette.m3outline
+                color: Colours.palette.m3onSurfaceVariant
                 font: Tokens.font.body.small
-                text: qsTr("↵ copy   ⌃P pin   ⌃D delete   ⌃O open link   ⌃1–9 quick-pick   ⌃⇧⌫ wipe   esc close")
+                text: qsTr("↵ copy   ⌃p pin   ⌃d delete   ⌃1–9 quick   ⇥ filter   esc close")
             }
         }
     }
