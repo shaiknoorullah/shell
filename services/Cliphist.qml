@@ -50,6 +50,16 @@ Singleton {
         runSink(["sh", "-c", 'printf "%s" "$1" | cliphist delete', "sh", raw], () => root.refresh());
     }
 
+    // Re-store text into cliphist history (used by delete-undo).
+    function restore(text: string): void {
+        runSink(["sh", "-c", 'printf "%s" "$1" | cliphist store', "sh", text], () => root.refresh());
+    }
+
+    // Put arbitrary text on the Wayland clipboard (used by edit-in-place save).
+    function copyText(text: string): void {
+        runSink(["sh", "-c", 'printf "%s" "$1" | wl-copy', "sh", text]);
+    }
+
     // Wipe the entire clipboard history.
     function wipe(): void {
         wipeProc.running = true;

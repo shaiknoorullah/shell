@@ -28,6 +28,9 @@ Item {
     property int index: 0
     property bool peeking: false
     property bool peekRevealed: false
+    // Decoded text of the just-deleted entry; drives the undo toast. Cleared on
+    // ⌃z (re-store) or after ~5s by undoTimer.
+    property string undoText: ""
 
     readonly property var filters: ["all", "text", "image", "link"]
 
@@ -116,8 +119,27 @@ Item {
             Cliphist.wipe();
             event.accepted = true;
         } else if (ctrl && (k === Qt.Key_D || k === Qt.Key_Delete)) {
-            if (root.current)
-                Cliphist.remove(root.current.raw);
+            if (root.current) {
+                const cur = root.current;
+                if (Logic.detectType(cur.preview) === "image") {
+                    // Images can't be re-stored as text — remove without undo.
+                    Cliphist.remove(cur.raw);
+                } else {
+                    // Decode first so undo can re-store the original content.
+                    Cliphist.decodeText(cur.raw, t => {
+                        root.undoText = t;
+                        undoTimer.restart();
+                        Cliphist.remove(cur.raw);
+                    });
+                }
+            }
+            event.accepted = true;
+        } else if (ctrl && k === Qt.Key_Z) {
+            if (root.undoText) {
+                Cliphist.restore(root.undoText);
+                root.undoText = "";
+                undoTimer.stop();
+            }
             event.accepted = true;
         } else if (ctrl && k === Qt.Key_P) {
             if (root.current)
@@ -301,6 +323,35 @@ Item {
                 }
             }
         }
+
+        // --- undo toast (delete + ⌃z) ---------------------------------
+        StyledRect {
+            visible: root.undoText !== ""
+            anchors.bottom: parent.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottomMargin: Tokens.padding.large
+            radius: Tokens.rounding.full
+            color: Colours.palette.m3inverseSurface
+            implicitHeight: toast.implicitHeight + Tokens.padding.small * 2
+            implicitWidth: toast.implicitWidth + Tokens.padding.large * 2
+
+            StyledText {
+                id: toast
+
+                anchors.centerIn: parent
+                text: qsTr("Deleted · ⌃z undo")
+                color: Colours.palette.m3inverseOnSurface
+                font: Tokens.font.body.small
+            }
+        }
+    }
+
+    // Auto-dismiss the undo toast a few seconds after a delete.
+    Timer {
+        id: undoTimer
+
+        interval: 5000
+        onTriggered: root.undoText = ""
     }
 
     ClipPeek {
