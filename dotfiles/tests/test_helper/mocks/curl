@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+echo "curl $*" >> "$MOCK_LOG"
+echo "${CURL_OUTPUT:-[]}"

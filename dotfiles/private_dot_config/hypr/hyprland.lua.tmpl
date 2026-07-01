@@ -1,0 +1,227 @@
+-- ───────────────────────────────────────────────────────────────────────
+--  Hyprland 0.55 (Lua config) — ported from i3 (84 keybinds), Dracula,
+--  JetBrainsMono. Colors templated from .chezmoidata.yaml via chezmoi.
+--  hyprlang .conf was dropped in 0.55 — this is the live config.
+--  https://wiki.hypr.land/Configuring/
+-- ───────────────────────────────────────────────────────────────────────
+
+local mod  = "SUPER"
+local rofi = "$HOME/.config/rofi/scripts"   -- $HOME expands in the exec shell
+local cs   = "$HOME/.nix-profile/bin/caelestia-shell"  -- host caelestia (distrobox quickshell removed)
+
+-- ── Environment (nvidia) ───────────────────────────────────────────────
+hl.env("LIBVA_DRIVER_NAME", "nvidia")
+hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+hl.env("NVD_BACKEND", "direct")
+hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
+
+-- ── Monitors (catch-all: preferred mode, auto position) ────────────────
+hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
+
+-- ── Appearance — Dracula, glass ON ─────────────────────────────────────
+hl.config({
+  general = {
+    gaps_in   = 6,
+    gaps_out  = 3,
+    border_size = 2,
+    ["col.active_border"]   = { colors = { "rgb({{ .dracula.purple }})", "rgb({{ .dracula.pink }})" }, angle = 45 },
+    ["col.inactive_border"] = "rgb({{ .dracula.surface0 }})",
+    layout = "dwindle",
+    resize_on_border = true,
+    allow_tearing = false,
+  },
+  decoration = {
+    rounding = 12,
+    dim_strength = 0.6,             -- how much dim_around darkens the background
+    blur = {
+      enabled = true,
+      size = 5,
+      passes = 2,
+      new_optimizations = true,
+      ignore_opacity = true,
+    },
+    shadow = {
+      enabled = true,
+      range = 14,
+      color = "rgba(00000073)",
+    },
+    active_opacity = 0.82,
+    inactive_opacity = 0.70,
+  },
+  animations = {
+    enabled = true,                 -- curves/leaves defined below (hl.curve/hl.animation)
+  },
+  input = {
+    kb_layout = "us",
+    follow_mouse = 1,
+    accel_profile = "flat",
+  },
+  misc = {
+    disable_hyprland_logo = true,
+    disable_splash_rendering = true,
+    focus_on_activate = false,
+  },
+  dwindle = {
+    preserve_split = true,
+    force_split = 2,
+  },
+  cursor = {
+    no_hardware_cursors = true,     -- avoids garbled cursor on nvidia
+  },
+})
+
+-- ── Animations — fluid Dracula morphs (springy popin + smooth slides) ──
+hl.curve("smooth",  { type = "bezier", points = { {0.16, 1.0}, {0.3, 1.0} } })
+hl.curve("snappy",  { type = "bezier", points = { {0.05, 0.9}, {0.1, 1.05} } })
+hl.curve("springy", { type = "spring", mass = 1, stiffness = 190, dampening = 21 })
+
+hl.animation({ leaf = "windows",    enabled = true, speed = 6, spring = "springy", style = "popin 80%" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 6, bezier = "snappy",  style = "popin 80%" })
+hl.animation({ leaf = "fade",       enabled = true, speed = 7, bezier = "smooth" })
+hl.animation({ leaf = "workspaces", enabled = true, speed = 7, bezier = "snappy",  style = "slide" })
+hl.animation({ leaf = "border",     enabled = true, speed = 8, bezier = "smooth" })
+hl.animation({ leaf = "layers",     enabled = true, speed = 6, bezier = "snappy",  style = "slide" })
+
+-- ── Window rules (workspace pinning + floats) ──────────────────────────
+-- Keep terminals fully opaque (don't translucent them via the global opacity).
+hl.window_rule({ match = { class = "^([Kk]itty)$" }, opaque = true })
+
+hl.window_rule({ match = { class = "^(zen-alpha|zen-browser|firefox|Firefox)$" },      workspace = "2 silent" })
+hl.window_rule({ match = { class = "^([Cc]ode|code-oss|Cursor)$" },                    workspace = "3 silent" })
+hl.window_rule({ match = { class = "^([Ss]lack)$" },                                   workspace = "4 silent" })
+hl.window_rule({ match = { class = "^([Oo]bsidian)$" },                                workspace = "7 silent" })
+hl.window_rule({ match = { class = "^([Ss]potify|YoutubeMusic|youtube-music)$" },      workspace = "8 silent" })
+hl.window_rule({ match = { class = "^([Pp]avucontrol|[Nn]m-connection-editor|file-roller)$" }, float = true })
+hl.window_rule({ match = { class = "^(zen-tab-switcher)$" },                           float = true, center = true })
+
+-- ── Layer rules: real glass on bars (compositor blur) ──────────────────
+hl.layer_rule({ match = { namespace = "waybar" },     blur = true })
+hl.layer_rule({ match = { namespace = "quickshell-.*" }, blur = true, ignore_alpha = 0.1 })
+hl.layer_rule({ match = { namespace = "caelestia-clipboard" }, blur = true, ignore_alpha = 0.2 })  -- frosted-glass clipboard overlay
+
+-- The focus panel is a real floating window — float + center it; Hyprland's
+-- window border/rounding/shadow/blur (decoration{}) apply automatically.
+hl.window_rule({ match = { title = "^(focus-panel)$" }, float = true })
+hl.window_rule({ match = { title = "^(focus-panel)$" }, center = true })
+hl.window_rule({ match = { title = "^(focus-panel)$" }, size = "900 600" })
+hl.window_rule({ match = { title = "^(focus-panel)$" }, dim_around = true })    -- modal dim
+hl.window_rule({ match = { title = "^(focus-panel)$" }, stay_focused = true })  -- grab focus (keyboard + dim)
+hl.window_rule({ match = { title = "^(focus-panel)$" }, opaque = true })        -- de-faint: exempt from global opacity
+
+-- Wallpaper picker widget — same floating/centered/focused treatment.
+hl.window_rule({ match = { title = "^(wallpaper-picker)$" }, float = true })
+hl.window_rule({ match = { title = "^(wallpaper-picker)$" }, center = true })
+hl.window_rule({ match = { title = "^(wallpaper-picker)$" }, size = "1000 680" })
+hl.window_rule({ match = { title = "^(wallpaper-picker)$" }, stay_focused = true })
+hl.layer_rule({ match = { namespace = "eww" },        blur = true })
+hl.layer_rule({ match = { namespace = "rofi" },       blur = true, ignore_alpha = 0.2 })
+
+-- ── Autostart ──────────────────────────────────────────────────────────
+hl.on("hyprland.start", function()
+  hl.exec_cmd("~/.nix-profile/bin/caelestia-shell")           -- caelestia shell (Nix, nixGL-wrapped); owns wallpaper + notifications
+  -- (old quickshell-launch + swww wall.sh + dunst removed — caelestia replaces all three)
+  hl.exec_cmd("hypridle")                                     -- idle → lock/screen-off
+  hl.exec_cmd("nm-applet --indicator")
+  hl.exec_cmd("systemctl --user start hyprpolkitagent.service")
+  hl.exec_cmd("wl-paste --type text  --watch cliphist store")
+  hl.exec_cmd("wl-paste --type image --watch cliphist store")
+  hl.exec_cmd("wl-paste --type text  --watch $HOME/.config/caelestia/scripts/clip-meta-record.sh")  -- clip metadata sidecar (ts/app)
+  hl.exec_cmd("wl-paste --type image --watch $HOME/.config/caelestia/scripts/clip-meta-record.sh")
+  -- pinned apps (rules above place them on their workspaces)
+  hl.exec_cmd("kitty")
+  hl.exec_cmd("zen-browser")
+  hl.exec_cmd("code")
+end)
+
+-- ═══════════════════════════════════════════════════════════════════════
+--  KEYBINDINGS (ported from i3)
+-- ═══════════════════════════════════════════════════════════════════════
+hl.bind(mod .. " + Return",    hl.dsp.exec_cmd("kitty"))
+hl.bind(mod .. " + SHIFT + Q", hl.dsp.window.close())
+hl.bind("ALT + F4",            hl.dsp.window.close())
+
+-- Rofi menus (run under XWayland)
+hl.bind(mod .. " + SPACE",     hl.dsp.exec_cmd(rofi .. "/rofilaunch.sh d"))
+hl.bind(mod .. " + Tab",       hl.dsp.exec_cmd(rofi .. "/rofilaunch.sh w"))
+hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd(rofi .. "/rofilaunch.sh --run"))
+hl.bind(mod .. " + SHIFT + F", hl.dsp.exec_cmd(rofi .. "/rofilaunch.sh f"))
+hl.bind(mod .. " + SHIFT + D", hl.dsp.exec_cmd(rofi .. "/rofi-style-selector.sh"))
+hl.bind(mod .. " + C",         hl.dsp.exec_cmd(cs .. " ipc call clipboard toggle"))  -- caelestia clipboard
+hl.bind(mod .. " + SHIFT + B", hl.dsp.exec_cmd(rofi .. "/rofi-bluetooth.sh"))
+hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd(cs .. " ipc call drawers toggle launcher"))  -- caelestia launcher / wallpaper
+hl.bind("Print",               hl.dsp.exec_cmd(cs .. " ipc call picker open"))  -- caelestia region screenshot
+hl.bind(mod .. " + CTRL + S",  hl.dsp.exec_cmd(rofi .. "/rofi-systemd.sh"))
+hl.bind(mod .. " + slash",     hl.dsp.exec_cmd(rofi .. "/rofi-websearch-v2.sh"))
+hl.bind(mod .. " + P",         hl.dsp.exec_cmd(rofi .. "/rofi-projects.sh"))
+hl.bind(mod .. " + G",         hl.dsp.exec_cmd(rofi .. "/rofi-git-profile.sh"))
+hl.bind(mod .. " + T",         hl.dsp.exec_cmd(rofi .. "/rofi-tmux.sh"))
+hl.bind(mod .. " + SHIFT + O", hl.dsp.exec_cmd(rofi .. "/rofi-bookmarks.sh"))
+hl.bind(mod .. " + N",         hl.dsp.exec_cmd(rofi .. "/rofi-obsidian.sh"))
+hl.bind(mod .. " + SHIFT + N", hl.dsp.exec_cmd(rofi .. "/rofi-obsidian-search.sh"))
+hl.bind(mod .. " + M",         hl.dsp.exec_cmd(rofi .. "/rofi-media.sh"))
+hl.bind(mod .. " + SHIFT + E", hl.dsp.exec_cmd(rofi .. "/rofi-power.sh"))
+
+-- ── ADHD engine (Phase 1) ──────────────────────────────────────────────
+hl.bind(mod .. " + SHIFT + A",      hl.dsp.exec_cmd("~/.local/bin/adhd-capture.sh"))
+hl.bind(mod .. " + SHIFT + X",      hl.dsp.exec_cmd("~/.local/bin/adhd-focus.sh status"))
+hl.bind(mod .. " + SHIFT + Return", hl.dsp.exec_cmd("~/.local/bin/adhd-start.sh"))
+hl.bind(mod .. " + A",              hl.dsp.exec_cmd(cs .. " ipc call leftbar toggle"))  -- summon left "chasing" bar (caelestia)
+
+-- Media keys (locked = work on lockscreen; repeating = hold to repeat)
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("pactl set-sink-volume @DEFAULT_SINK@ +5%"), { repeating = true })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("pactl set-sink-volume @DEFAULT_SINK@ -5%"), { repeating = true })
+hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("pactl set-sink-mute @DEFAULT_SINK@ toggle"),     { locked = true })
+hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("pactl set-source-mute @DEFAULT_SOURCE@ toggle"), { locked = true })
+hl.bind("XF86AudioPlay",        hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
+hl.bind("XF86AudioNext",        hl.dsp.exec_cmd("playerctl next"),       { locked = true })
+hl.bind("XF86AudioPrev",        hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
+
+hl.bind(mod .. " + Escape",     hl.dsp.exec_cmd("hyprlock"))
+
+-- Focus (vim + arrows)
+local focusdirs = { H = "l", J = "d", K = "u", L = "r", left = "l", down = "d", up = "u", right = "r" }
+for key, dir in pairs(focusdirs) do
+  hl.bind(mod .. " + " .. key, hl.dsp.focus({ direction = dir }))
+end
+-- Move window
+local movedirs = { H = "l", J = "d", K = "u", L = "r" }
+for key, dir in pairs(movedirs) do
+  hl.bind(mod .. " + SHIFT + " .. key, hl.dsp.window.move({ direction = dir }))
+end
+
+-- Layout
+hl.bind(mod .. " + B",            hl.dsp.layout("preselect r"))
+hl.bind(mod .. " + V",            hl.dsp.layout("preselect d"))
+hl.bind(mod .. " + F",            hl.dsp.window.fullscreen({}))
+hl.bind(mod .. " + E",            hl.dsp.layout("togglesplit"))
+hl.bind(mod .. " + SHIFT + space", hl.dsp.window.float({}))
+hl.bind(mod .. " + S",            hl.dsp.group.toggle())
+hl.bind(mod .. " + CTRL + H",     hl.dsp.group.prev())
+hl.bind(mod .. " + CTRL + L",     hl.dsp.group.next())
+
+-- Workspaces 1–10 (focus + move) ; "0" = ws 10
+local wskeys = { ["1"]=1,["2"]=2,["3"]=3,["4"]=4,["5"]=5,["6"]=6,["7"]=7,["8"]=8,["9"]=9,["0"]=10 }
+for key, ws in pairs(wskeys) do
+  hl.bind(mod .. " + " .. key,           hl.dsp.focus({ workspace = ws }))
+  hl.bind(mod .. " + SHIFT + " .. key,   hl.dsp.window.move({ workspace = ws }))
+end
+hl.bind(mod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
+hl.bind(mod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
+hl.bind(mod .. " + mouse:272",  hl.dsp.window.drag(),   { mouse = true })
+hl.bind(mod .. " + mouse:273",  hl.dsp.window.resize(), { mouse = true })
+
+-- System
+hl.bind(mod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprctl reload"))
+hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload"))
+hl.bind(mod .. " + Delete",    hl.dsp.exit())
+
+-- Resize submap
+hl.bind(mod .. " + R", hl.dsp.submap("resize"))
+hl.define_submap("resize", function()
+  hl.bind("H", hl.dsp.window.resize({ x = -20, y = 0,  relative = true }), { repeating = true })
+  hl.bind("J", hl.dsp.window.resize({ x = 0,  y = 20,  relative = true }), { repeating = true })
+  hl.bind("K", hl.dsp.window.resize({ x = 0,  y = -20, relative = true }), { repeating = true })
+  hl.bind("L", hl.dsp.window.resize({ x = 20, y = 0,   relative = true }), { repeating = true })
+  hl.bind("Return", hl.dsp.submap("reset"))
+  hl.bind("escape", hl.dsp.submap("reset"))
+end)

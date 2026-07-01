@@ -1,0 +1,43 @@
+name: Dracula Operator
+
+fonts:
+  text: JetBrainsMono Nerd Font
+  icon: Material Symbols Rounded
+
+colors:
+  bg: "#13131f"
+  panel: "#1a1a2e"
+  panel_alt: "#232336"
+  surface: "#2d2d44"
+  surface_alt: "#3a3a52"
+  border: "#4a4a66"
+  border_subtle: "#2d2d44"
+
+  fg: "#f8f8f2"
+  dim: "#9a9ab8"
+  muted: "#70709a"
+  faint: "#7f7fa8"
+
+  accent: "#bd93f9"
+  accent_2: "#8be9fd"
+  cursor: "#3a3a52"
+  selection: "#44475a"
+  matched: "#f5d547"
+
+  mode_bg: "#bd93f9"
+  mode_fg: "#13131f"
+  statusbar: "#232336"
+  status_fg: "#9a9ab8"
+
+  priority_high: "#ff4d4d"
+  priority_medium: "#ff9e3b"
+  priority_low: "#8be9fd"
+  project: "#50fa7b"
+  tag: "#8be9fd"
+  due: "#f5d547"
+  overdue: "#ff4d4d"
+  today: "#ff9e3b"
+  done: "#50fa7b"
+  active: "#bd93f9"
+  warning: "#ff9e3b"
+  error: "#ff4d4d"

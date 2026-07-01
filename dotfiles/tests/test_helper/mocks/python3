@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "python3 $*" >> "$MOCK_LOG"
+real_python3=$(which -a python3 | grep -v "mocks" | head -1)
+"$real_python3" "$@"

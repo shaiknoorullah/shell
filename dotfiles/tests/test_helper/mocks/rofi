@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+echo "rofi $*" >> "$MOCK_LOG"
+if [[ -f "$ROFI_MULTI_OUTPUT" ]] && [[ -s "$ROFI_MULTI_OUTPUT" ]]; then
+    count=$(cat "$ROFI_CALL_COUNT")
+    count=$((count + 1))
+    echo "$count" > "$ROFI_CALL_COUNT"
+    sed -n "${count}p" "$ROFI_MULTI_OUTPUT"
+else
+    echo "${ROFI_MOCK_OUTPUT:-}"
+fi

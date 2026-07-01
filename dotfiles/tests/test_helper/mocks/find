@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+echo "find $*" >> "$MOCK_LOG"
+if [[ "${FIND_USE_REAL:-}" == "true" ]]; then
+    real_find=$(which -a find | grep -v "mocks" | head -1)
+    "$real_find" "$@"
+else
+    echo "${FIND_OUTPUT:-}" | grep -v '^$' || true
+fi

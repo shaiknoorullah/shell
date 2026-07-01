@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<title>ADHD-OS — mockup</title>
+<style>
+/* ─────────────────────────────────────────────────────────────
+   ADHD-OS visual mockup — Dracula, zero-chrome, calm minimalism
+   States: idle · left · focus · browser  (window.setState)
+   ───────────────────────────────────────────────────────────── */
+:root{
+  --base:#282a36; --bg:#15161e; --bg2:#1a1b26; --fg:#f8f8f2; --comment:#6272a4;
+  --purple:#bd93f9; --pink:#ff79c6; --cyan:#8be9fd; --green:#50fa7b;
+  --orange:#ffb86c; --red:#ff5555; --yellow:#f1fa8c;
+  --glass:rgba(40,42,54,.72); --glass2:rgba(30,31,42,.85);
+  --s1:rgba(248,248,242,.04); --s2:rgba(248,248,242,.07);
+  --bd:rgba(248,248,242,.09); --hov:rgba(248,248,242,.10);
+  --a12:rgba(189,147,249,.12); --a18:rgba(189,147,249,.18); --a35:rgba(189,147,249,.35);
+  --rad:16px; --radbar:20px; --pill:99px; --chip:9px;
+  --mono:"JetBrainsMono Nerd Font","JetBrains Mono",monospace;
+  --ease:cubic-bezier(.25,1,.5,1);
+}
+*{margin:0;padding:0;box-sizing:border-box;border:0;outline:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#000;
+  font-family:var(--mono);color:var(--fg);-webkit-font-smoothing:antialiased}
+.muted{color:var(--comment)}
+
+/* ── Wallpaper ─────────────────────────────────────────────── */
+#wall{position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(1200px 800px at 78% 18%, rgba(98,114,164,.28), transparent 60%),
+    radial-gradient(900px 700px at 20% 80%, rgba(189,147,249,.18), transparent 55%),
+    radial-gradient(700px 600px at 60% 60%, rgba(139,233,253,.07), transparent 60%),
+    linear-gradient(160deg,#0c0d14 0%,#15161e 45%,#1a1320 100%);}
+#wall::after{content:"";position:absolute;inset:0;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+.stars{position:absolute;inset:0;}
+.stars i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:.5;
+  box-shadow:0 0 4px #fff;}
+
+/* faux tiled windows behind, to sell the desktop */
+#tiles{position:fixed;inset:46px 12px 42px 12px;z-index:1;display:flex;gap:6px;
+  transition:filter .5s var(--ease),opacity .5s var(--ease)}
+.win{flex:1;border-radius:14px;border:1px solid var(--bd);background:rgba(20,21,30,.55);
+  backdrop-filter:blur(6px);overflow:hidden;display:flex;flex-direction:column}
+.win .tt{font-size:11px;color:var(--comment);padding:8px 12px;border-bottom:1px solid var(--s2)}
+.win .bd{flex:1;padding:14px;font-size:12px;line-height:1.7;color:rgba(248,248,242,.45)}
+.code .bd{color:rgba(139,233,253,.45)}
+.code .kw{color:var(--pink)} .code .fn{color:var(--green)} .code .st{color:var(--yellow)}
+
+/* ── Top bar ───────────────────────────────────────────────── */
+#top{position:fixed;top:0;left:0;right:0;height:84px;z-index:30;
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding:7px 14px 0;pointer-events:none}
+#top>*{pointer-events:auto}
+.barpill{display:flex;align-items:center;gap:7px;height:32px;padding:0 12px;
+  background:var(--glass);backdrop-filter:blur(18px);border:1px solid var(--bd);
+  border-radius:var(--pill);box-shadow:0 6px 24px rgba(0,0,0,.35)}
+.seg{display:flex;align-items:center;gap:7px;height:24px;padding:0 4px}
+.ctxpill{display:flex;align-items:center;gap:7px;height:24px;padding:0 12px;border-radius:var(--pill);
+  background:var(--a18);color:var(--fg);font-size:12px;font-weight:600}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--purple)}
+.ws{display:flex;gap:5px;align-items:center}
+.ws b{display:grid;place-items:center;min-width:22px;height:22px;border-radius:var(--pill);
+  background:var(--s1);color:var(--comment);font-size:11px}
+.ws b.on{background:var(--a18);color:var(--fg);padding:0 12px;gap:7px;display:flex;font-weight:600}
+.ws b.has{color:var(--fg);background:var(--s2)}
+.winttl{font-size:12px;color:rgba(248,248,242,.7);margin-left:4px}
+.clock{font-size:13px;font-weight:600;letter-spacing:.5px}
+.clock small{color:var(--comment);font-weight:400;margin-left:8px;font-size:11px}
+.np{display:flex;align-items:center;gap:8px;font-size:11.5px;color:rgba(248,248,242,.72);
+  max-width:280px;overflow:hidden;white-space:nowrap}
+.np .bar{display:flex;gap:2px;align-items:flex-end;height:12px}
+.np .bar s{width:2px;background:var(--green);border-radius:1px;animation:eq 1s var(--ease) infinite alternate}
+.np .bar s:nth-child(2){animation-delay:.2s}.np .bar s:nth-child(3){animation-delay:.4s}.np .bar s:nth-child(4){animation-delay:.1s}
+@keyframes eq{from{height:3px}to{height:12px}}
+.tic{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(248,248,242,.66);padding:0 8px}
+.badge{background:var(--red);color:#1a1320;font-size:9px;font-weight:700;border-radius:var(--pill);padding:0 5px;height:14px;display:grid;place-items:center}
+
+/* ── Notch (OLED, carved into top edge, self-morphing) ─────── */
+#notch{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:6;
+  width:226px;height:30px;overflow:hidden;cursor:pointer;
+  background:#000;border:1px solid rgba(255,255,255,.06);border-top:0;
+  border-radius:0 0 19px 19px;box-shadow:0 12px 38px rgba(0,0,0,.75);
+  transition:width .48s cubic-bezier(.34,1.42,.5,1),height .48s cubic-bezier(.34,1.42,.5,1),
+    border-radius .4s var(--ease)}
+#notch:hover{width:244px}
+#notch.open{width:396px;height:194px;border-radius:0 0 30px 30px;cursor:default}
+/* collapsed */
+.mini{position:absolute;top:0;left:0;right:0;height:30px;display:flex;align-items:center;
+  justify-content:center;gap:9px;padding:0 16px;transition:opacity .2s var(--ease)}
+#notch.open .mini{opacity:0;pointer-events:none}
+.mini .art{width:17px;height:17px;border-radius:50%;flex:none;
+  background:linear-gradient(135deg,var(--purple),var(--pink),var(--orange))}
+.mini .eq{display:flex;gap:2px;align-items:flex-end;height:12px}
+.mini .eq s{width:2px;background:var(--green);border-radius:1px;height:5px;
+  animation:eq 1s var(--ease) infinite alternate}
+.mini .eq s:nth-child(2){animation-delay:.18s}.mini .eq s:nth-child(3){animation-delay:.36s}
+.mini .eq s:nth-child(4){animation-delay:.1s}.mini .eq s:nth-child(5){animation-delay:.28s}
+.mini .tk{font-size:11px;color:rgba(248,248,242,.8);max-width:128px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* expanded player (fills the morphed notch) */
+.full{position:absolute;inset:0;padding:17px 19px;display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;transition:opacity .24s var(--ease) .1s}
+#notch.open .full{opacity:1;pointer-events:auto}
+.full>*{opacity:0;transform:translateY(7px);transition:all .42s var(--ease)}
+#notch.open .full>*{opacity:1;transform:none}
+#notch.open .full>*:nth-child(1){transition-delay:.16s}
+#notch.open .full>*:nth-child(2){transition-delay:.22s}
+#notch.open .full>*:nth-child(3){transition-delay:.28s}
+.full .r1{display:flex;gap:13px;align-items:center}
+.full .bigart{width:56px;height:56px;border-radius:13px;flex:none;
+  background:linear-gradient(135deg,var(--purple),var(--pink),var(--orange));
+  box-shadow:0 6px 20px rgba(189,147,249,.32)}
+.full .meta{min-width:0}
+.full .meta b{font-size:14px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.full .meta span{font-size:11px;color:var(--comment)}
+.full .liveact{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;
+  color:var(--purple);background:var(--a12);border-radius:var(--pill);padding:3px 9px;width:max-content}
+.full .liveact .d{width:5px;height:5px;border-radius:50%;background:var(--purple);
+  box-shadow:0 0 7px var(--purple);animation:bl 1.4s var(--ease) infinite}
+.full .scrub{display:flex;align-items:center;gap:9px;margin-top:13px;font-size:10px;color:var(--comment)}
+.full .trk{flex:1;height:4px;border-radius:99px;background:rgba(248,248,242,.12);position:relative}
+.full .trk i{position:absolute;left:0;top:0;height:100%;width:36%;border-radius:99px;
+  background:linear-gradient(90deg,var(--purple),var(--pink))}
+.full .trk i::after{content:"";position:absolute;right:-4px;top:50%;transform:translateY(-50%);
+  width:9px;height:9px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+.full .ctrls{display:flex;align-items:center;justify-content:center;gap:24px;margin-top:13px;
+  font-size:16px;color:var(--fg)}
+.full .ctrls .play{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;
+  background:var(--fg);color:#000;font-size:14px}
+
+/* ── Bottom context bar ────────────────────────────────────── */
+#bottom{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);width:1860px;height:30px;z-index:30;
+  display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:11.5px;
+  background:var(--glass2);backdrop-filter:blur(18px);border:1px solid var(--bd);
+  border-radius:var(--pill);box-shadow:0 6px 24px rgba(0,0,0,.35);
+  transition:opacity .35s var(--ease),transform .35s var(--ease)}
+#bottom .l,#bottom .c,#bottom .r{display:flex;align-items:center;gap:14px}
+.k{color:var(--comment)} .v{color:var(--fg)}
+.proj{color:var(--purple);font-weight:600}
+.branch{color:var(--green)}
+.elapsed{color:var(--cyan);font-weight:600}
+.score{display:flex;align-items:center;gap:6px}
+.ring{--p:84;width:16px;height:16px;border-radius:50%;
+  background:conic-gradient(var(--green) calc(var(--p)*1%),var(--s2) 0)}
+.pips{display:flex;gap:3px}.pips i{width:6px;height:6px;border-radius:2px;background:var(--green)}
+.pips i.off{background:var(--s2)}
+.encourage{color:var(--yellow);font-weight:600}
+
+/* ── Left bar ──────────────────────────────────────────────── */
+#left{position:fixed;top:46px;left:12px;bottom:42px;width:430px;z-index:40;
+  background:var(--glass2);backdrop-filter:blur(26px);border:1px solid var(--bd);
+  border-radius:var(--rad);box-shadow:0 16px 50px rgba(0,0,0,.5);
+  padding:16px;display:flex;flex-direction:column;gap:11px;overflow:hidden;
+  transform:translateX(-470px);opacity:0;transition:transform .42s var(--ease),opacity .42s var(--ease)}
+.lhead{display:flex;align-items:center;justify-content:space-between;padding:2px 2px 2px}
+.lhead h1{font-size:14px;font-weight:700;letter-spacing:.2px}
+.lhead .sub{font-size:10.5px;color:var(--comment)}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:13px 14px}
+.card .ct{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--comment);margin-bottom:9px;display:flex;justify-content:space-between}
+
+/* big timer */
+.timer{background:linear-gradient(150deg,var(--a18),var(--s1));border-color:var(--a35)}
+.timer .big{font-size:54px;font-weight:700;letter-spacing:-2px;line-height:1;color:var(--fg);
+  font-variant-numeric:tabular-nums}
+.timer .lbl{font-size:12px;color:var(--purple);font-weight:600;margin-top:6px}
+.timer .run{font-size:11px;color:var(--comment);margin-top:3px}
+.prog{height:5px;border-radius:99px;background:var(--s2);margin-top:11px;overflow:hidden}
+.prog i{display:block;height:100%;width:52%;border-radius:99px;background:linear-gradient(90deg,var(--purple),var(--pink))}
+
+/* salah strip */
+.salah{display:flex;gap:6px}
+.salah b{flex:1;text-align:center;font-size:10.5px;padding:6px 0;border-radius:var(--chip);
+  background:var(--s1);color:var(--comment);border:1px solid transparent}
+.salah b.done{background:rgba(80,250,123,.12);color:var(--green)}
+.salah b.next{background:var(--a18);color:var(--purple);border-color:var(--a35);font-weight:700}
+
+.row{display:flex;align-items:center;gap:10px;font-size:12.5px;padding:6px 0}
+.row .ic{width:20px;color:var(--comment);text-align:center}
+.row.active{color:var(--fg)} .row .t{flex:1} .row .m{color:var(--comment);font-size:11px}
+.row.active .t{font-weight:600}
+.tasklist .row.active{background:var(--a12);margin:0 -8px;padding:6px 8px;border-radius:9px}
+.divider{height:1px;background:var(--s2);margin:1px 0}
+
+/* music */
+.music{display:flex;gap:12px;align-items:center}
+.art{width:46px;height:46px;border-radius:10px;flex:none;
+  background:linear-gradient(135deg,var(--purple),var(--pink),var(--orange))}
+.music .mt{flex:1;min-width:0}.music .mt b{font-size:12.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.music .mt span{font-size:11px;color:var(--comment)}
+.mctrl{display:flex;gap:10px;color:var(--fg);font-size:14px}
+
+/* learning + tiny chips */
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.chip{font-size:11px;padding:6px 11px;border-radius:var(--pill);background:var(--s2);color:rgba(248,248,242,.8)}
+.chip.due{background:rgba(241,250,140,.12);color:var(--yellow)}
+
+/* AI agent */
+.agent{background:linear-gradient(150deg,rgba(139,233,253,.10),var(--s1));border-color:rgba(139,233,253,.28)}
+.agent .ask{display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--bd);
+  border-radius:var(--pill);padding:9px 13px;font-size:12px;color:var(--comment);margin-top:3px}
+.agent .ask .cur{width:1.5px;height:14px;background:var(--cyan);animation:bl 1s steps(1) infinite}
+@keyframes bl{50%{opacity:0}}
+.models{display:flex;gap:6px;margin-top:9px}
+.models b{font-size:10.5px;padding:4px 10px;border-radius:var(--pill);background:var(--s1);color:var(--comment)}
+.models b.on{background:rgba(139,233,253,.16);color:var(--cyan);font-weight:600}
+
+/* ── Focus mode ────────────────────────────────────────────── */
+#focus{position:fixed;inset:0;z-index:60;background:radial-gradient(1200px 900px at 50% 42%,#16121f,#0a0b10 70%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  opacity:0;visibility:hidden;transition:opacity .5s var(--ease),visibility .5s}
+#focus .label{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--comment)}
+#focus .clock{font-size:160px;font-weight:700;letter-spacing:-8px;line-height:.9;
+  font-variant-numeric:tabular-nums;
+  background:linear-gradient(180deg,#fff,#bd93f9);-webkit-background-clip:text;background-clip:text;color:transparent}
+#focus .task{font-size:22px;color:rgba(248,248,242,.82);font-weight:600}
+#focus .next{font-size:14px;color:var(--comment)}
+#focus .fring{position:relative;width:30px;height:30px;border-radius:50%;
+  background:conic-gradient(var(--purple) 52%,rgba(248,248,242,.08) 0)}
+#focus .fbar{width:420px;height:4px;border-radius:99px;background:rgba(248,248,242,.08);overflow:hidden}
+#focus .fbar i{display:block;height:100%;width:52%;background:linear-gradient(90deg,var(--purple),var(--pink))}
+
+/* ── Browser (zero-chrome Canvas) ──────────────────────────── */
+#browser{position:fixed;inset:0;z-index:55;background:#faf7f2;color:#1a1620;
+  opacity:0;visibility:hidden;transition:opacity .45s var(--ease),visibility .45s;
+  font-family:Georgia,"Times New Roman",serif}
+#browser .page{max-width:720px;margin:0 auto;padding:120px 24px}
+#browser h2{font-size:34px;margin-bottom:6px;letter-spacing:-.5px}
+#browser .by{font-family:var(--mono);font-size:12px;color:#998;margin-bottom:30px}
+#browser p{font-size:18px;line-height:1.8;color:#2a2530;margin-bottom:20px}
+#browser .hint{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:11px;color:#b9b3ad}
+/* command palette overlay */
+#palette{position:fixed;inset:0;z-index:70;display:flex;align-items:flex-start;justify-content:center;
+  padding-top:170px;background:rgba(10,11,16,.45);backdrop-filter:blur(4px);
+  opacity:0;visibility:hidden;transition:opacity .25s var(--ease),visibility .25s}
+.pal{width:680px;background:var(--glass2);backdrop-filter:blur(30px);border:1px solid var(--a35);
+  border-radius:var(--rad);box-shadow:0 30px 80px rgba(0,0,0,.6);overflow:hidden;
+  transform:scale(.96);transition:transform .25s var(--ease)}
+.pal .inp{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--s2);font-size:16px}
+.pal .inp .p{color:var(--purple)} .pal .inp .cur{width:2px;height:18px;background:var(--cyan);animation:bl 1s steps(1) infinite}
+.pal .res{padding:8px}
+.pal .it{display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:10px;font-size:13.5px;font-family:var(--mono)}
+.pal .it .ic{width:18px;color:var(--comment)}
+.pal .it .t{flex:1} .pal .it .u{font-size:11px;color:var(--comment)}
+.pal .it.sel{background:var(--a18)} .pal .it.sel .ic{color:var(--purple)}
+.pal .leg{display:flex;gap:16px;padding:11px 18px;border-top:1px solid var(--s2);font-size:10.5px;color:var(--comment)}
+.pal .leg b{color:rgba(248,248,242,.7)}
+.pal .leg kbd{font-family:var(--mono);background:var(--s2);border-radius:5px;padding:1px 6px;color:var(--fg)}
+
+/* ── State machine ─────────────────────────────────────────── */
+body.state-left #left{transform:translateX(0);opacity:1}
+body.state-left #bottom{opacity:0;transform:translateX(-50%) translateY(8px)}
+body.state-focus #focus{opacity:1;visibility:visible}
+body.state-browser #browser{opacity:1;visibility:visible}
+body.state-browser.pal-open #palette{opacity:1;visibility:visible}
+body.state-browser.pal-open .pal{transform:scale(1)}
+.caption{position:fixed;bottom:54px;left:50%;transform:translateX(-50%);z-index:80;
+  font-family:var(--mono);font-size:12px;color:var(--comment);background:rgba(10,11,16,.7);
+  padding:6px 16px;border-radius:99px;border:1px solid var(--bd);opacity:0;transition:opacity .4s}
+body.cap .caption{opacity:1}
+</style>
+</head>
+<body class="state-idle">
+<div id="wall"><div class="stars" id="stars"></div></div>
+
+<div id="tiles">
+  <div class="win code"><div class="tt">  boolgen-otel.ts — pnow-ats-v2</div>
+    <div class="bd"><span class="kw">export async function</span> <span class="fn">instrument</span>(span) {<br>&nbsp;&nbsp;<span class="kw">const</span> tracer = otel.<span class="fn">trace</span>(<span class="st">'boolgen'</span>);<br>&nbsp;&nbsp;<span class="kw">return</span> tracer.<span class="fn">startActiveSpan</span>(...);<br>}</div></div>
+  <div class="win"><div class="tt">  argocd · prod-ap-south · 47 apps synced</div>
+    <div class="bd">✓ pnats-temporal&nbsp;&nbsp;Synced · Healthy<br>✓ signoz&nbsp;&nbsp;Synced · Healthy<br>⟳ boolgen&nbsp;&nbsp;Progressing…</div></div>
+  <div class="win"><div class="tt">  kitty · ~/work/pnow-ats-v2</div>
+    <div class="bd">❯ task start boolgen-otel<br><span style="color:var(--green)">Timewarrior started · work.ats</span><br>❯ _</div></div>
+</div>
+
+<!-- TOP BAR -->
+<div id="top">
+  <div class="barpill">
+    <div class="ctxpill"><span class="dot"></span>work</div>
+    <div class="ws">
+      <b class="on"><span class="dot"></span>2 · pnow-ats-v2</b>
+      <b class="has">3</b><b class="has">4</b><b>5</b><b>6</b>
+    </div>
+    <span class="winttl"> nvim — boolgen-otel.ts</span>
+  </div>
+
+  <!-- Notch (carved into the top edge; morphs open into the player) -->
+  <div id="notch" onclick="window.toggleIsland&&window.toggleIsland()">
+    <div class="mini">
+      <span class="art"></span>
+      <span class="eq"><s></s><s></s><s></s><s></s><s></s></span>
+      <span class="tk">Let It Happen</span>
+    </div>
+    <div class="full">
+      <div class="r1">
+        <div class="bigart"></div>
+        <div class="meta"><b>Let It Happen</b><span>Tame Impala · Currents</span>
+          <div class="liveact"><span class="d"></span>deep block · 1:47 → ʿAsr</div></div>
+      </div>
+      <div class="scrub"><span>1:24</span><div class="trk"><i></i></div><span>3:58</span></div>
+      <div class="ctrls"><span>󰒮</span><span class="play"></span><span>󰒭</span></div>
+    </div>
+  </div>
+
+  <div class="barpill">
+    <span class="clock">2:54<small>Wed 18 Jun</small></span>
+    <span class="tic">󰕾 62</span>
+    <span class="tic">󰂚<span class="badge">2</span></span>
+  </div>
+</div>
+
+<!-- BOTTOM CONTEXT BAR -->
+<div id="bottom">
+  <div class="l"><span class="proj"> pnow-ats-v2</span><span class="branch">⎇ feat/boolgen-otel</span><span class="k">work · ap-south</span></div>
+  <div class="c"><span class="k">⏱ active</span><span class="v">boolgen OTel instrumentation</span><span class="elapsed">1:47:22</span></div>
+  <div class="r">
+    <span class="score"><span class="ring"></span><span class="v">focus 84</span></span>
+    <span class="k">🔥 12-day</span>
+    <span class="pips"><i></i><i></i><i></i><i class="off"></i></span>
+    <span class="k">☕ 2 · 󰖃 3 walks</span>
+    <span class="encourage">✦ best focus this week</span>
+  </div>
+</div>
+
+<!-- LEFT BAR -->
+<div id="left">
+  <div class="lhead"><div><h1>What are you chasing?</h1><div class="sub">one block · one outcome</div></div>
+    <div class="sub" style="text-align:right">Wed · 2:54<br>ʿAsr in 48m</div></div>
+
+  <div class="card timer">
+    <div class="ct">deep block <span>→ ʿAsr 4:42</span></div>
+    <div class="big">01:47:22</div>
+    <div class="lbl">boolgen OTel instrumentation</div>
+    <div class="run">runway to ʿAsr · 48m left · gentle nudge at 90m</div>
+    <div class="prog"><i></i></div>
+  </div>
+
+  <div class="salah">
+    <b class="done">Fajr</b><b class="done">Dhuhr</b><b class="next">ʿAsr</b><b>Maghrib</b><b>Isha</b>
+  </div>
+
+  <div class="card agent">
+    <div class="ct">master agent <span>full context</span></div>
+    <div class="ask"> Ask anything — "summarize my open PRs"<span class="cur"></span></div>
+    <div class="models"><b class="on"> Gemini 2.5</b><b> Claude</b><b>󰧑 local</b><b class="muted">NotebookLM</b></div>
+  </div>
+
+  <div class="card tasklist">
+    <div class="ct">now · next</div>
+    <div class="row active"><span class="ic"></span><span class="t">boolgen OTel instrumentation</span><span class="m">1:47</span></div>
+    <div class="row"><span class="ic">󰄱</span><span class="t">review FR-006 version history PR</span><span class="m">work</span></div>
+    <div class="row"><span class="ic">󰄱</span><span class="t">reply Slack — kaarbaaz thread</span><span class="m">work</span></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">today <span>calendar</span></div>
+    <div class="row"><span class="ic" style="color:var(--green)"></span><span class="t">Standup</span><span class="m">done</span></div>
+    <div class="row"><span class="ic" style="color:var(--purple)"></span><span class="t">1:1 — Kaarbaaz review</span><span class="m">5:30</span></div>
+    <div class="divider"></div>
+    <div class="row"><span class="ic"></span><span class="t">Inbox</span><span class="m">3 pending</span></div>
+  </div>
+
+  <div class="card music">
+    <div class="art"></div>
+    <div class="mt"><b>Let It Happen</b><span>Tame Impala · Currents</span></div>
+    <div class="mctrl"><span>󰒮</span><span></span><span>󰒭</span></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">learn · in the gaps <span>spaced repetition</span></div>
+    <div class="row"><span class="ic" style="color:var(--yellow)">󰓆</span><span class="t">Go generics — constraints</span><span class="m">7 due</span></div>
+    <div class="chips">
+      <span class="chip due">review 2 cards · 4 min</span>
+      <span class="chip">tiny: triage inbox</span>
+      <span class="chip">CKA: etcd backup</span>
+    </div>
+  </div>
+</div>
+
+<!-- FOCUS MODE -->
+<div id="focus">
+  <div class="label">deep block · pnow-ats-v2</div>
+  <div class="clock">01:47</div>
+  <div class="task">boolgen OTel instrumentation</div>
+  <div class="fbar"><i></i></div>
+  <div class="next">→ ʿAsr 4:42 · 48m of runway · everything else is hidden</div>
+</div>
+
+<!-- BROWSER CANVAS -->
+<div id="browser">
+  <div class="page">
+    <h2>The Point of Performance</h2>
+    <div class="by">aether canvas · zero chrome · no tabs</div>
+    <p>The problem with ADHD is not knowing what to do, but doing what you know. Knowledge exists; deployment fails at the critical moment.</p>
+    <p>So the screen shows only the page. No tabs, no address bar, no buttons, no bait. Everything else is one keystroke away — and dismissed instantly.</p>
+    <p>Press <b>Space</b> for the command palette, <b>Tab</b> to jump between everything you have open, <b>g&nbsp;c</b> to capture a thought without leaving the page.</p>
+  </div>
+  <div class="hint">no tabs · no chrome — press <b>Space</b></div>
+</div>
+
+<!-- COMMAND PALETTE -->
+<div id="palette">
+  <div class="pal">
+    <div class="inp"><span class="p"></span><span>boolgen<span class="cur"></span></span></div>
+    <div class="res">
+      <div class="it sel"><span class="ic"></span><span class="t">boolgen OTel — instrumentation spec</span><span class="u">github.com · work</span></div>
+      <div class="it"><span class="ic"></span><span class="t">pnow-ats-v2 · PR #24 boolgen</span><span class="u">github.com · work</span></div>
+      <div class="it"><span class="ic"></span><span class="t">SigNoz — boolgen traces</span><span class="u">signoz.ap-south · work</span></div>
+      <div class="it"><span class="ic">󰈙</span><span class="t">boolgen design — powerhouse</span><span class="u">obsidian · personal</span></div>
+    </div>
+    <div class="leg"><span><kbd>Space</kbd> <b>palette</b></span><span><kbd>g o</kbd> omni</span><span><kbd>Tab</kbd> tabs</span><span><kbd>g c</kbd> capture</span><span><kbd>g f</kbd> focus</span><span><kbd>⏎</kbd> open</span></div>
+  </div>
+</div>
+
+<div class="caption" id="cap"></div>
+
+<script>
+const stars=document.getElementById('stars');
+for(let i=0;i<70;i++){const s=document.createElement('i');
+  s.style.left=Math.random()*100+'%';s.style.top=Math.random()*70+'%';
+  s.style.opacity=(.2+Math.random()*.5).toFixed(2);
+  s.style.transform=`scale(${(.5+Math.random()*1.2).toFixed(2)})`;stars.appendChild(s);}
+const body=document.body;
+window.setState=(s)=>{body.className='';body.classList.add('state-'+s);};
+window.setPalette=(open)=>{body.classList.toggle('pal-open',open);};
+window.setCaption=(t)=>{const c=document.getElementById('cap');
+  if(!t){body.classList.remove('cap');return;} c.textContent=t;body.classList.add('cap');};
+// ── Interactive viewing: number keys / click to switch states ──
+const STATES=['idle','left','focus','browser'];
+function go(n){window.setPalette(false);if(n===5){window.setState('browser');window.setPalette(true);}
+  else window.setState(STATES[n-1]||'idle');hint.textContent='now: '+(n===5?'browser + palette':STATES[n-1]);}
+const island=document.getElementById('notch');
+window.setIsland=(open)=>island.classList.toggle('open',open);
+window.toggleIsland=()=>island.classList.toggle('open');
+window.addEventListener('keydown',e=>{
+  if(e.key>='1'&&e.key<='5')go(+e.key);
+  if(e.key==='m'||e.key==='M')window.toggleIsland();
+});
+const hint=document.createElement('div');
+hint.style.cssText='position:fixed;right:14px;bottom:46px;z-index:90;font:11px var(--mono);'+
+ 'color:var(--comment);background:rgba(10,11,16,.82);border:1px solid var(--bd);'+
+ 'border-radius:99px;padding:7px 14px';
+hint.textContent='press  1 idle · 2 left · 3 focus · 4 browser · 5 palette';
+document.body.appendChild(hint);
+</script>
+</body>
+</html>

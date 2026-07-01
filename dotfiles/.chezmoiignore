@@ -1,0 +1,7 @@
+# Not deployed by chezmoi (repo tooling / docs / system-level configs)
+docs
+tests
+keyd
+skills-lock.json
+README.md
+.config/adhd/prayer-times.conf

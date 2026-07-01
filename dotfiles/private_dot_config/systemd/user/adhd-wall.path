@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch for wallpaper-set requests from the quickshell wallpaper widget
+
+[Path]
+PathModified=%h/.cache/adhd/wall-request
+Unit=adhd-wall.service
+
+[Install]
+WantedBy=default.target

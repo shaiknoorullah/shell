@@ -1,0 +1,80 @@
+/**
+ * Simple single-column windowed menu
+ * For utility menus without a HyDE-specific style.
+ */
+
+@theme "~/.config/rofi/themes/theme.rasi"
+
+configuration {
+    show-icons:                  false;
+}
+
+window {
+    width:                       30em;
+    transparency:                "real";
+    fullscreen:                  false;
+    border:                      0px;
+    border-radius:               12px;
+    border-color:                @main-br;
+    background-color:            @main-bg;
+    cursor:                      "default";
+}
+
+mainbox {
+    enabled:                     true;
+    spacing:                     0em;
+    padding:                     0em;
+    background-color:            transparent;
+    children:                    [ "inputbar", "listview" ];
+}
+
+inputbar {
+    padding:                     1em;
+    spacing:                     0.5em;
+    background-color:            @main-bg;
+    children:                    [ "prompt", "entry" ];
+}
+
+prompt {
+    background-color:            transparent;
+    text-color:                  @main-br;
+}
+
+entry {
+    background-color:            transparent;
+    text-color:                  @main-fg;
+    placeholder:                 "Search...";
+    placeholder-color:           #6C7086ff;
+    cursor:                      text;
+}
+
+listview {
+    columns:                     1;
+    lines:                       10;
+    cycle:                       true;
+    dynamic:                     false;
+    scrollbar:                   false;
+    fixed-height:                true;
+    padding:                     0.5em;
+    spacing:                     0.3em;
+    background-color:            transparent;
+}
+
+element {
+    padding:                     0.8em 1em;
+    border-radius:               8px;
+    background-color:            transparent;
+    text-color:                  @main-fg;
+    cursor:                      pointer;
+}
+
+element selected.normal {
+    background-color:            @select-bg;
+    text-color:                  @select-fg;
+}
+
+element-text {
+    background-color:            transparent;
+    text-color:                  inherit;
+    cursor:                      inherit;
+}

@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+echo "i3lock $*" >> "$MOCK_LOG"

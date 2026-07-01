@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+echo "task $*" >> "$MOCK_LOG"
+case "$*" in
+    *export*) echo '[{"id":1,"description":"boolgen otel"}]' ;;
+esac

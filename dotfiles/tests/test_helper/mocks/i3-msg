@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+echo "i3-msg $*" >> "$MOCK_LOG"

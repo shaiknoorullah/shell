@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+echo "xrandr $*" >> "$MOCK_LOG"
+if [[ "$1" == "--query" ]]; then
+    echo "${XRANDR_OUTPUT:-eDP-1 connected primary 1920x1080+0+0}"
+fi

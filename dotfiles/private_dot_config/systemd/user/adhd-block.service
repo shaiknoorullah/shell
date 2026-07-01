@@ -1,0 +1,6 @@
+[Unit]
+Description=Execute an ADHD focus-block start requested by the quickshell drawer
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/adhd-block-exec.sh

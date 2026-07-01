@@ -1,0 +1,7 @@
+[Unit]
+Description=Prune unpinned caelestia clipboard entries older than TTL (24h)
+Documentation=https://github.com/shaiknoorullah/caelestia-design
+
+[Service]
+Type=oneshot
+ExecStart=%h/.config/caelestia/scripts/clip-prune.sh

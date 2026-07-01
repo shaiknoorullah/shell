@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "jq $*" >> "$MOCK_LOG"
+real_jq=$(which -a jq | grep -v "mocks" | head -1)
+"$real_jq" "$@"

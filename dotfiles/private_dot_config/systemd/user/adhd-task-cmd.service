@@ -1,0 +1,6 @@
+[Unit]
+Description=Execute taskwarrior commands queued by the quickshell task panel
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/adhd-task-cmd.sh

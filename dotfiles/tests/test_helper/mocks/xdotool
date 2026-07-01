@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+echo "xdotool $*" >> "$MOCK_LOG"
+echo "12345"

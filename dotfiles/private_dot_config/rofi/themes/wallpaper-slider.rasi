@@ -1,0 +1,106 @@
+/**
+ * Wallpaper Slider — Horizontal wallpaper browser
+ * Used with rofi-blocks for dynamic content + live preview.
+ * 16:9 aspect, 80% screen width, centered.
+ */
+
+@theme "~/.config/rofi/themes/theme.rasi"
+
+window {
+    width:                       80%;
+    transparency:                "real";
+    fullscreen:                  false;
+    border:                      0px;
+    border-radius:               16px;
+    border-color:                @main-br;
+    background-color:            @main-bg;
+    cursor:                      "default";
+    anchor:                      center;
+    location:                    center;
+}
+
+mainbox {
+    enabled:                     true;
+    spacing:                     0em;
+    padding:                     1em;
+    background-color:            transparent;
+    children:                    [ "inputbar", "listview", "message" ];
+}
+
+inputbar {
+    padding:                     0.8em 1em;
+    spacing:                     0.5em;
+    border-radius:               12px 12px 0 0;
+    background-color:            @main-bg;
+    children:                    [ "textbox-prompt-colon", "entry" ];
+}
+
+textbox-prompt-colon {
+    expand:                      false;
+    str:                         "󰸉 ";
+    text-color:                  @main-br;
+    background-color:            transparent;
+}
+
+entry {
+    background-color:            transparent;
+    text-color:                  @main-fg;
+    placeholder:                 "Browse wallpapers...";
+    placeholder-color:           #6C7086ff;
+    cursor:                      text;
+}
+
+listview {
+    columns:                     5;
+    lines:                       1;
+    cycle:                       true;
+    dynamic:                     true;
+    scrollbar:                   false;
+    layout:                      vertical;
+    spacing:                     1em;
+    padding:                     1em;
+    background-color:            transparent;
+}
+
+element {
+    orientation:                 vertical;
+    padding:                     0.5em;
+    border-radius:               12px;
+    background-color:            transparent;
+    cursor:                      pointer;
+}
+
+element selected.normal {
+    background-color:            @select-bg;
+    border:                      0 0 3px 0 solid;
+    border-color:                @main-br;
+}
+
+element-icon {
+    size:                        16em;
+    border-radius:               10px;
+    background-color:            transparent;
+    cursor:                      inherit;
+}
+
+element-text {
+    horizontal-align:            0.5;
+    background-color:            transparent;
+    text-color:                  @main-fg;
+    cursor:                      inherit;
+}
+
+element-text selected {
+    text-color:                  @select-fg;
+}
+
+message {
+    padding:                     0.5em 1em;
+    background-color:            transparent;
+}
+
+textbox {
+    background-color:            transparent;
+    text-color:                  @main-fg;
+    horizontal-align:            0.5;
+}

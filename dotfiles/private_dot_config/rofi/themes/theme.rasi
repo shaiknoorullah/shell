@@ -1,0 +1,13 @@
+/* Wallust-generated HyDE-compatible theme mapping
+ * Auto-generated from wallpaper — do not edit manually */
+* {
+    font:                "JetBrainsMono Nerd Font 10";
+    main-bg:            #171617e6;
+    main-fg:            #FFF6F0ff;
+    main-br:            #84A56Dff;
+    main-ex:            #FEE5D5ff;
+    select-bg:          #748AB2ff;
+    select-fg:          #171617ff;
+    separatorcolor:     transparent;
+    border-color:       transparent;
+}

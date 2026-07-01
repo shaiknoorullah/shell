@@ -1,0 +1,10 @@
+[Unit]
+Description=Periodic caelestia clipboard prune (every 4h, 24h TTL)
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=4h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

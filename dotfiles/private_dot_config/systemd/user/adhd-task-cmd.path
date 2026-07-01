@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch for taskwarrior commands queued by the quickshell task panel
+
+[Path]
+PathModified=%h/.cache/adhd/task-cmd
+Unit=adhd-task-cmd.service
+
+[Install]
+WantedBy=default.target

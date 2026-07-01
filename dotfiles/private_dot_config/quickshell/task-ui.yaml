@@ -1,0 +1,14 @@
+theme: task-ui/themes/dracula.yaml
+keybinds: task-ui/keybinds/default.yaml
+
+layout:
+  density: compact
+  show_filter_pane: true
+  show_detail_pane: true
+  line_numbers: true
+  reduced_motion: false
+
+overrides:
+  # Optional one-off theme overrides. Example:
+  # colors:
+  #   accent: "#cba6f7"

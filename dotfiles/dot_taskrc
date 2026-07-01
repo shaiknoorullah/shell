@@ -1,0 +1,24 @@
+# ~/.taskrc — managed by chezmoi
+data.location=~/.task
+news.version=2.6.0
+
+# UDAs
+uda.estimate.type=duration
+uda.estimate.label=Est
+
+# Contexts (work/lab/agents/personal) — read filters
+context.work.read=project ~ work
+context.lab.read=project ~ lab
+context.agents.read=project ~ agents
+context.personal.read=project ~ personal
+
+# ADHD: a small curated Today list via the +today tag; near-term urgency boosts
+urgency.user.tag.today.coefficient=15.0
+urgency.user.tag.next.coefficient=8.0
+urgency.due.coefficient=12.0
+# never shame: no overdue color screaming
+color.overdue=
+report.today.description=Today
+report.today.columns=id,project,description,estimate
+report.today.filter=+today status:pending
+report.today.sort=urgency-

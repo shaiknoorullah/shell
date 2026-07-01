@@ -1,0 +1,33 @@
+/* Wallust-generated rofi color palette
+ * Auto-generated from wallpaper — do not edit manually */
+* {
+    cm-rosewater:   #FEE5D5;
+    cm-flamingo:    #E5CEC0;
+    cm-pink:        #9DB78A;
+    cm-mauve:       #84A56D;
+    cm-red:         #534B53;
+    cm-maroon:      #645D64;
+    cm-peach:       #A27D67;
+    cm-yellow:      #B59785;
+    cm-green:       #667766;
+    cm-teal:        #758575;
+    cm-sky:         #90A1C1;
+    cm-sapphire:    #8296BA;
+    cm-blue:        #748AB2;
+    cm-lavender:    #9EADC9;
+    cm-text:        #FFF6F0;
+    cm-subtext1:    #E6DDD8;
+    cm-subtext0:    #CCC5C0;
+    cm-overlay2:    #B4ACA8;
+    cm-overlay1:    #ACA39E;
+    cm-overlay0:    #9B938E;
+    cm-surface2:    #696668;
+    cm-surface1:    #565355;
+    cm-surface0:    #434042;
+    cm-base:        #171617;
+    cm-mantle:      #151415;
+    cm-crust:       #121212;
+
+    /* Alpha variant for fullscreen dim overlay */
+    cm-base-overlay: #17161795;
+}

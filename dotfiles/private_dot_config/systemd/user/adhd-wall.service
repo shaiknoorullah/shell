@@ -1,0 +1,6 @@
+[Unit]
+Description=Set the wallpaper requested by the quickshell wallpaper widget
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/adhd-wall-exec.sh

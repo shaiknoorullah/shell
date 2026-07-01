@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+echo "pgrep $*" >> "$MOCK_LOG"
+if [[ "${PGREP_FOUND:-}" == "true" ]]; then
+    echo "12345"; exit 0
+else
+    exit 1
+fi

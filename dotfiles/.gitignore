@@ -1,0 +1,8 @@
+# skill installer artifacts (npx skills add)
+.agents/
+skills-lock.json
+# playwright symlink for mockup rendering
+docs/superpowers/mockups/node_modules
+.secrets
+.zshrc.bak
+key.txt

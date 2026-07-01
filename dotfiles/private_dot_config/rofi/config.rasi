@@ -1,0 +1,101 @@
+/*
+ * Rofi Global Configuration
+ * ─────────────────────────────────────────────────────────────
+ * This file contains ONLY configuration settings (behavior, modes,
+ * display options). It does NOT contain any theme/styling rules.
+ *
+ * Themes are applied per-menu at invocation time using the `-theme`
+ * flag. For example:
+ *   rofi -show drun -theme ~/.config/rofi/themes/app-launcher.rasi
+ *
+ * This separation means you can change rofi's behavior here without
+ * touching any visual theme, and vice versa. The config is loaded
+ * automatically from this default path (~/.config/rofi/config.rasi)
+ * every time rofi starts, regardless of which theme is specified.
+ */
+
+configuration {
+    /* ── Available Modes ─────────────────────────────────────
+     * Comma-separated list of enabled modes. These appear as tabs
+     * in the mode-switcher of list-menu themes. Order here controls
+     * the default tab order. */
+    modi:                       "drun,run,ssh,filebrowser,window,keys";
+
+    /* ── Icons ───────────────────────────────────────────────
+     * show-icons enables app icons next to entries in drun/window modes.
+     * icon-theme selects which GTK icon set to use for those icons. */
+    show-icons:                 true;
+    icon-theme:                 "Adwaita";
+
+    /* ── Terminal & SSH ──────────────────────────────────────
+     * Which terminal emulator to launch for "run" and "ssh" modes.
+     * ssh-command is a template: {terminal}, {ssh-client}, {host},
+     * and {port} are replaced by rofi at runtime. */
+    terminal:                   "kitty";
+    ssh-client:                 "ssh";
+    ssh-command:                "{terminal} -e {ssh-client} {host} [-p {port}]";
+
+    /* ── Display Formatting ──────────────────────────────────
+     * drun-display-format: Shows the app name plus its generic name
+     *   (e.g., "Firefox (Web Browser)") using Pango markup for styling.
+     * window-format: Shows workspace number, WM_CLASS, and window title
+     *   for the window switcher mode. */
+    drun-display-format:        "{name} [<span weight='light' size='small'><i>({generic})</i></span>]";
+    window-format:              "{w}  {c}  {t}";
+
+    /* ── Search & Sorting ────────────────────────────────────
+     * disable-history: false keeps recent selections ranked higher.
+     * sorting-method "fzf" uses fzf-style ranking (substring + scoring).
+     * matching "fuzzy" allows non-contiguous character matching, so
+     *   typing "ff" finds "Firefox". */
+    disable-history:            false;
+    sorting-method:             "fzf";
+    matching:                   "fuzzy";
+
+    /* ── Mouse Behavior ──────────────────────────────────────
+     * scroll-method 0: Page-based scrolling (vs. continuous).
+     * click-to-exit: Clicking outside the content area dismisses rofi.
+     * me-select-entry "": Disables hover-to-select (mouse movement
+     *   alone does not change selection).
+     * me-accept-entry "MousePrimary": Left-click confirms selection. */
+    scroll-method:              0;
+    click-to-exit:              true;
+    me-select-entry:            "";
+    me-accept-entry:            "MousePrimary";
+
+    /* ── Mode Display Labels ─────────────────────────────────
+     * Human-readable labels shown in the mode-switcher tab bar.
+     * Each is prefixed with a Nerd Font icon glyph for visual clarity. */
+    display-drun:               "  Apps";
+    display-run:                "  Run";
+    display-ssh:                "  SSH";
+    display-filebrowser:        "  Files";
+    display-window:             "  Windows";
+    display-keys:               "  Keys";
+
+    /* ── Vim-style Navigation (Ctrl+hjkl) ─────────────────
+     * Move between entries and columns using Ctrl + vim keys.
+     * Ctrl+j/k: down/up through entries
+     * Ctrl+h/l: left/right across columns or tabs
+     *
+     * Default bindings that conflict are reassigned:
+     *   kb-accept-entry:    Ctrl+j -> removed (Return/KP_Enter remain)
+     *   kb-remove-char-back: Ctrl+h -> removed (BackSpace remains)
+     *   kb-remove-to-eol:   Ctrl+k -> removed
+     *   kb-mode-complete:   Ctrl+l -> removed */
+    kb-accept-entry:            "Return,KP_Enter";
+    kb-remove-char-back:        "BackSpace,Shift+BackSpace";
+    kb-remove-to-eol:           "";
+    kb-mode-complete:           "";
+    kb-row-up:                  "Up,Control+k";
+    kb-row-down:                "Down,Control+j";
+    kb-row-left:                "Control+h";
+    kb-row-right:               "Control+l";
+
+    /* ── Filebrowser Mode Settings ───────────────────────────
+     * Directories appear before files, sorted alphabetically by name. */
+    filebrowser {
+        directories-first:      true;
+        sorting-method:         "name";
+    }
+}

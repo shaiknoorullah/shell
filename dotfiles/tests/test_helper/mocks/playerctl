@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+echo "playerctl $*" >> "$MOCK_LOG"
+case "$1" in
+    metadata)
+        case "$2" in
+            artist) echo "${PLAYERCTL_ARTIST:-Test Artist}" ;;
+            title)  echo "${PLAYERCTL_TITLE:-Test Song}" ;;
+        esac ;;
+    *) ;;
+esac

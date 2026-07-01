@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+echo "tmux $*" >> "$MOCK_LOG"
+case "$1" in
+    list-sessions)
+        if [[ -n "${TMUX_SESSIONS:-}" ]]; then
+            # If -F "#{session_name}" is used, return just names (first word of each line)
+            if [[ "$*" == *'#{session_name}'* ]] && [[ "$*" != *'session_windows'* ]]; then
+                echo "$TMUX_SESSIONS" | awk '{print $1}'
+            else
+                echo "$TMUX_SESSIONS"
+            fi
+        else
+            exit 1
+        fi ;;
+    *) ;;
+esac

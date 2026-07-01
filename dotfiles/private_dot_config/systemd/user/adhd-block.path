@@ -1,0 +1,10 @@
+[Unit]
+Description=Watch for ADHD focus-block start requests from the quickshell drawer
+
+[Path]
+# Fires adhd-block.service whenever the quickshell picker writes a request.
+PathModified=%h/.cache/adhd/start-request
+Unit=adhd-block.service
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+echo "bluetoothctl $*" >> "$MOCK_LOG"
+case "$1" in
+    show)    echo "Powered: ${BT_POWERED:-yes}" ;;
+    devices)
+        if [[ "$2" == "Paired" ]]; then
+            echo "${BT_PAIRED_DEVICES:-}" | grep -v '^$' || true
+        else
+            echo "${BT_ALL_DEVICES:-}" | grep -v '^$' || true
+        fi ;;
+    info)    echo "Connected: ${BT_CONNECTED:-no}" ;;
+    *)       ;;
+esac

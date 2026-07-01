@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+echo "maim $*" >> "$MOCK_LOG"
+for arg in "$@"; do
+    if [[ "$arg" != -* ]]; then MAIM_OUTPUT="$arg"; fi
+done
+if [[ -n "${MAIM_OUTPUT:-}" ]]; then
+    echo "fake_png_data" > "$MAIM_OUTPUT"
+fi

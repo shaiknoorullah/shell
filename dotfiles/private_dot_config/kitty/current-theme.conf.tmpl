@@ -1,0 +1,39 @@
+# vim:ft=kitty
+# Dracula (operator palette) — templated from .chezmoidata.yaml; bright ANSI literals.
+
+foreground            #{{ .dracula.fg }}
+background            #{{ .dracula.base }}
+selection_foreground  #{{ .dracula.base }}
+selection_background  #{{ .dracula.selection }}
+
+cursor                #{{ .dracula.fg }}
+cursor_text_color     #{{ .dracula.base }}
+url_color             #{{ .dracula.cyan }}
+
+active_border_color   #{{ .dracula.purple }}
+inactive_border_color #{{ .dracula.surface1 }}
+
+active_tab_foreground   #{{ .dracula.base }}
+active_tab_background   #{{ .dracula.purple }}
+inactive_tab_foreground #{{ .dracula.fg }}
+inactive_tab_background #{{ .dracula.surface0 }}
+
+# normal
+color0 #{{ .dracula.surface0 }}
+color1 #{{ .dracula.red }}
+color2 #{{ .dracula.green }}
+color3 #{{ .dracula.yellow }}
+color4 #{{ .dracula.blue }}
+color5 #{{ .dracula.purple }}
+color6 #{{ .dracula.cyan }}
+color7 #{{ .dracula.fg }}
+
+# bright
+color8  #{{ .dracula.comment }}
+color9  #{{ .dracula.red }}
+color10 #{{ .dracula.green }}
+color11 #{{ .dracula.yellow }}
+color12 #{{ .dracula.blue }}
+color13 #{{ .dracula.pink }}
+color14 #{{ .dracula.cyan }}
+color15 #{{ .dracula.fg }}

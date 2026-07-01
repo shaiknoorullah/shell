@@ -1,0 +1,26 @@
+# Single palette source of truth — the operator's own Dracula variant,
+# extracted from the live polybar + eww notification center (so everything
+# converges on the palette already in use). No '#'; templates prepend it.
+dracula:
+  base:      "1a1a2e"   # bg (polybar/eww)
+  bg:        "13131f"   # darker
+  fg:        "f8f8f2"
+  comment:   "585880"   # muted
+  selection: "2d2d44"
+  surface0:  "232336"
+  surface1:  "2d2d44"
+  surface2:  "3a3a52"
+  subtext0:  "9a9ab8"
+  purple:    "bd93f9"
+  pink:      "ff79c6"
+  blue:      "6a8cff"
+  cyan:      "8be9fd"
+  green:     "50fa7b"
+  orange:    "ff9e3b"
+  red:       "ff4d4d"
+  yellow:    "f5d547"
+context:
+  work:     "bd93f9"
+  lab:      "ff79c6"
+  agents:   "8be9fd"
+  personal: "50fa7b"
