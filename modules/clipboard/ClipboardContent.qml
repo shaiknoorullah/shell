@@ -120,16 +120,12 @@ Item {
 
     anchors.fill: parent
 
-    // Dim backdrop; clicking outside the card closes the overlay.
-    StyledRect {
+    // No dim backdrop (it animated in awkwardly). Just an invisible click-catcher
+    // so clicking outside the card still closes; the card itself is translucent +
+    // compositor-blurred (frosted glass) via the caelestia-clipboard layer rule.
+    MouseArea {
         anchors.fill: parent
-        color: Colours.palette.m3scrim
-        opacity: 0.4
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: root.requestClose()
-        }
+        onClicked: root.requestClose()
     }
 
     StyledRect {
@@ -139,7 +135,12 @@ Item {
         width: Math.min(440, parent.width * 0.5)
         height: Math.min(560, parent.height * 0.72)
         radius: Tokens.rounding.large
-        color: Colours.palette.m3surface
+        // Translucent so the compositor blur (Hyprland layer rule) shows through
+        // as frosted glass.
+        color: {
+            const c = Colours.palette.m3surface;
+            return Qt.rgba(c.r, c.g, c.b, 0.82);
+        }
 
         // Swallow clicks so they don't fall through to the backdrop.
         MouseArea {
