@@ -78,3 +78,82 @@ function fuzzy(query, items, keyFn) {
         return i === q.length;
     });
 }
+
+// Shannon entropy (bits/char) — used by the secret heuristic below.
+function shannonEntropy(s) {
+    const freq = {};
+    for (const c of s)
+        freq[c] = (freq[c] || 0) + 1;
+    let e = 0;
+    const n = s.length;
+    for (const k in freq) {
+        const p = freq[k] / n;
+        e -= p * Math.log2(p);
+    }
+    return e;
+}
+
+// Is `text` likely a secret (password / API key / token / private key)?
+// `hint` is an explicit clipboard mime hint (e.g. "secret" from a password
+// manager); when present it wins. Otherwise fall back to shape + entropy checks.
+// Pure + node-tested; drives masking in the overlay.
+function detectSensitive(text, hint) {
+    if (hint === "secret" || hint === "password" || hint === "sensitive")
+        return true;
+    const s = String(text);
+    if (!s)
+        return false;
+    if (/-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(s))
+        return true;
+    const t = s.trim();
+    if (/^eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(t))
+        return true; // JWT
+    if (/\b(AKIA|ASIA)[0-9A-Z]{16}\b/.test(s))
+        return true; // AWS access key id
+    if (/\bgh[pousr]_[A-Za-z0-9]{36,}\b/.test(s))
+        return true; // GitHub token
+    if (/\bglpat-[A-Za-z0-9_-]{20,}\b/.test(s))
+        return true; // GitLab PAT
+    if (/\bsk-[A-Za-z0-9]{20,}\b/.test(s))
+        return true; // OpenAI-style key
+    if (/\bxox[baprs]-[A-Za-z0-9-]{10,}\b/.test(s))
+        return true; // Slack token
+    // Heuristic: a single whitespace-free token of decent length with mixed
+    // character classes and high entropy looks like a random secret, not prose
+    // (prose has spaces → excluded).
+    if (!/\s/.test(t) && t.length >= 12 && t.length <= 256) {
+        const classes = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9]/].filter(re => re.test(t)).length;
+        if (classes >= 3 && shannonEntropy(t) >= 3.5)
+            return true;
+    }
+    return false;
+}
+
+// A masked label for a secret — never exposes the value.
+function maskSecret(text) {
+    return "•••••••• · secret · " + String(text).length + " chars";
+}
+
+// Has an entry copied at `tsMs` outlived its TTL as of `nowMs`? Strict > so an
+// entry exactly at the TTL boundary is not yet expired.
+function isExpired(tsMs, nowMs, ttlMs) {
+    return (nowMs - tsMs) > ttlMs;
+}
+
+// Select the raws to delete: unpinned entries whose recorded ts is older than
+// the TTL. Entries without a numeric ts are skipped (safe — unknown age is never
+// pruned; the prune script backfills their ts on first sighting). `pinned` may be
+// a Set or an array of pinned raws.
+function prunable(entries, pinned, nowMs, ttlMs) {
+    const isPinned = raw => pinned instanceof Set ? pinned.has(raw) : Array.isArray(pinned) ? pinned.indexOf(raw) >= 0 : false;
+    const out = [];
+    for (const e of (entries || [])) {
+        if (isPinned(e.raw))
+            continue;
+        if (typeof e.ts !== "number")
+            continue;
+        if (isExpired(e.ts, nowMs, ttlMs))
+            out.push(e.raw);
+    }
+    return out;
+}

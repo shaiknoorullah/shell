@@ -9,8 +9,8 @@ import { readFileSync } from "node:fs";
 // `data:` module so the objects it returns share this file's intrinsics (needed
 // for deepStrictEqual prototype checks).
 const src = readFileSync(new URL("./logic.js", import.meta.url), "utf8").replace(/^\s*\.pragma\s+library\s*$/m, "");
-const dataUrl = "data:text/javascript," + encodeURIComponent(`${src}\nexport { parseList, detectType, relTime, fuzzy };`);
-const { parseList, detectType, relTime, fuzzy } = await import(dataUrl);
+const dataUrl = "data:text/javascript," + encodeURIComponent(`${src}\nexport { parseList, detectType, relTime, fuzzy, detectSensitive, maskSecret, isExpired, prunable };`);
+const { parseList, detectType, relTime, fuzzy, detectSensitive, maskSecret, isExpired, prunable } = await import(dataUrl);
 
 test("parseList splits id and preview on first tab", () => {
     const out = parseList("12\thello world\n11\tbinary data image/png\n");
@@ -50,4 +50,42 @@ test("fuzzy subsequence, case-insensitive", () => {
     const items = [{ p: "Hello World" }, { p: "goodbye" }];
     assert.deepEqual(fuzzy("hlo", items, i => i.p), [{ p: "Hello World" }]);
     assert.deepEqual(fuzzy("", items, i => i.p), items);
+});
+
+test("detectSensitive flags secrets + hint, not prose", () => {
+    assert.equal(detectSensitive("", "secret"), true);
+    assert.equal(detectSensitive("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.abc123DEFxyz", ""), true);
+    assert.equal(detectSensitive("AKIA1234567890ABCDEF", ""), true);
+    assert.equal(detectSensitive("ghp_" + "a".repeat(36), ""), true);
+    assert.equal(detectSensitive("sk-" + "b".repeat(40), ""), true);
+    assert.equal(detectSensitive("-----BEGIN OPENSSH PRIVATE KEY-----", ""), true);
+    assert.equal(detectSensitive("Xk9$mP2qLz#7Wn4v", ""), true);
+    assert.equal(detectSensitive("just a normal sentence here", ""), false);
+    assert.equal(detectSensitive("hunter", ""), false);
+    assert.equal(detectSensitive("https://example.com/path", ""), false);
+});
+
+test("maskSecret hides value, shows char count", () => {
+    const m = maskSecret("abcdefghijklmnopqrstuvwx");
+    assert.ok(m.includes("secret"));
+    assert.ok(m.includes("24"));
+    assert.ok(!m.includes("abcdef"));
+});
+
+test("isExpired boundary (strict >)", () => {
+    const ttl = 1000;
+    assert.equal(isExpired(0, ttl + 1, ttl), true);
+    assert.equal(isExpired(0, ttl - 1, ttl), false);
+    assert.equal(isExpired(0, ttl, ttl), false);
+});
+
+test("prunable returns only unpinned expired raws", () => {
+    const now = 100000, ttl = 1000;
+    const entries = [
+        { raw: "pinned-old", ts: 0 },
+        { raw: "old", ts: 0 },
+        { raw: "fresh", ts: now - 10 },
+        { raw: "no-ts" }
+    ];
+    assert.deepEqual(prunable(entries, new Set(["pinned-old"]), now, ttl), ["old"]);
 });
