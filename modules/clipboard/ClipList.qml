@@ -19,7 +19,7 @@ StyledListView {
     signal activated(int index)
 
     model: entries
-    spacing: Tokens.spacing.small
+    spacing: 2
     clip: true
     currentIndex: 0
     keyNavigationEnabled: false

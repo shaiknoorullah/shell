@@ -35,7 +35,7 @@ Item {
         return "content_paste";
     }
 
-    implicitHeight: 56
+    implicitHeight: 40
     anchors.left: parent?.left
     anchors.right: parent?.right
 
@@ -51,16 +51,16 @@ Item {
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: Tokens.padding.medium
-        anchors.rightMargin: Tokens.padding.medium
+        anchors.leftMargin: Tokens.padding.small
+        anchors.rightMargin: Tokens.padding.small
         spacing: Tokens.spacing.small
 
         Item {
             id: indicator
 
             Layout.alignment: Qt.AlignVCenter
-            implicitWidth: 36
-            implicitHeight: 36
+            implicitWidth: 28
+            implicitHeight: 28
 
             StyledClippingRect {
                 anchors.fill: parent

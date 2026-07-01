@@ -132,14 +132,14 @@ Item {
         id: card
 
         anchors.centerIn: parent
-        width: Math.min(440, parent.width * 0.5)
-        height: Math.min(560, parent.height * 0.72)
+        width: Math.min(400, parent.width * 0.42)
+        height: Math.min(470, parent.height * 0.64)
         radius: Tokens.rounding.large
         // Translucent so the compositor blur (Hyprland layer rule) shows through
         // as frosted glass.
         color: {
             const c = Colours.palette.m3surface;
-            return Qt.rgba(c.r, c.g, c.b, 0.82);
+            return Qt.rgba(c.r, c.g, c.b, 0.88);
         }
 
         // Swallow clicks so they don't fall through to the backdrop.
@@ -149,7 +149,7 @@ Item {
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: Tokens.padding.large
+            anchors.margins: Tokens.padding.medium
             spacing: Tokens.spacing.small
 
             // --- thin search line -----------------------------------------
@@ -224,13 +224,55 @@ Item {
                 }
             }
 
-            // --- readable footer hints ------------------------------------
-            StyledText {
+            // --- footer: separator + shortcut pills -----------------------
+            StyledRect {
                 Layout.fillWidth: true
-                elide: Text.ElideRight
-                color: Colours.palette.m3onSurfaceVariant
-                font: Tokens.font.body.small
-                text: qsTr("↵ copy   ⌃p pin   ⌃d delete   ⌃1–9 quick   ⇥ filter   esc close")
+                implicitHeight: 1
+                color: Colours.palette.m3outlineVariant
+            }
+
+            Flow {
+                Layout.fillWidth: true
+                spacing: Tokens.spacing.small
+
+                Repeater {
+                    model: [
+                        { k: "↵", l: "copy" },
+                        { k: "⌃P", l: "pin" },
+                        { k: "⌃D", l: "del" },
+                        { k: "⌃1-9", l: "quick" },
+                        { k: "⇥", l: "filter" },
+                        { k: "esc", l: "close" }
+                    ]
+
+                    StyledRect {
+                        required property var modelData
+
+                        radius: Tokens.rounding.small
+                        color: Colours.palette.m3surfaceContainerHighest
+                        implicitHeight: pill.implicitHeight + 4
+                        implicitWidth: pill.implicitWidth + 12
+
+                        Row {
+                            id: pill
+
+                            anchors.centerIn: parent
+                            spacing: 5
+
+                            StyledText {
+                                text: modelData.k
+                                font: Tokens.font.mono.small
+                                color: Colours.palette.m3onSurface
+                            }
+
+                            StyledText {
+                                text: modelData.l
+                                font: Tokens.font.body.small
+                                color: Colours.palette.m3onSurfaceVariant
+                            }
+                        }
+                    }
+                }
             }
         }
     }
