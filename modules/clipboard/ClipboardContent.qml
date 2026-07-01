@@ -26,6 +26,8 @@ Item {
     property string query: ""
     property string filter: "all"
     property int index: 0
+    property bool peeking: false
+    property bool peekRevealed: false
 
     readonly property var filters: ["all", "text", "image", "link"]
 
@@ -70,7 +72,20 @@ Item {
         const n = root.model.length;
 
         if (k === Qt.Key_Escape) {
-            root.requestClose();
+            if (root.peeking)
+                root.peeking = false;
+            else
+                root.requestClose();
+            event.accepted = true;
+        } else if (k === Qt.Key_Space) {
+            if (root.current) {
+                root.peeking = !root.peeking;
+                root.peekRevealed = false;
+            }
+            event.accepted = true;
+        } else if (ctrl && k === Qt.Key_R) {
+            if (root.peeking && root.current)
+                root.peekRevealed = true;
             event.accepted = true;
         } else if (k === Qt.Key_Down || (ctrl && k === Qt.Key_J)) {
             root.index = Math.min(root.clampedIndex + 1, n - 1);
@@ -275,5 +290,12 @@ Item {
                 }
             }
         }
+    }
+
+    ClipPeek {
+        visible: root.peeking
+        entry: root.current
+        revealed: root.peekRevealed
+        onRequestClose: root.peeking = false
     }
 }
