@@ -24,6 +24,23 @@ StyledListView {
     currentIndex: 0
     keyNavigationEnabled: false
 
+    section.property: "section"
+    section.delegate: Item {
+        required property string section
+
+        width: ListView.view.width
+        implicitHeight: 18
+
+        StyledText {
+            anchors.left: parent.left
+            anchors.leftMargin: Tokens.padding.small
+            anchors.verticalCenter: parent.verticalCenter
+            text: parent.section.toUpperCase()
+            font: Tokens.font.body.small
+            color: Colours.palette.m3outline
+        }
+    }
+
     highlightMoveDuration: 150
     highlightResizeDuration: 0
     highlight: StyledRect {

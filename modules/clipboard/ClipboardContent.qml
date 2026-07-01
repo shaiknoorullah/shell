@@ -41,9 +41,16 @@ Item {
                     id: String(p.raw).split("\t")[0],
                     raw: p.raw,
                     preview: p.preview,
-                    pinned: true
+                    pinned: true,
+                    section: "Pinned"
                 }));
-        const hist = Cliphist.entries.filter(e => !ClipPins.isPinned(e.raw));
+        const hist = Cliphist.entries.filter(e => !ClipPins.isPinned(e.raw)).map(e => ({
+                    id: e.id,
+                    raw: e.raw,
+                    preview: e.preview,
+                    pinned: false,
+                    section: "Recent"
+                }));
         return pins.concat(hist);
     }
 
