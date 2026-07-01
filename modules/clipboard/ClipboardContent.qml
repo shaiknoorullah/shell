@@ -28,6 +28,8 @@ Item {
     property int index: 0
     property bool peeking: false
     property bool peekRevealed: false
+    // Peek opened in edit mode (⌃e). Reset whenever the peek closes.
+    property bool peekEditing: false
     // Decoded text of the just-deleted entry; drives the undo toast. Cleared on
     // ⌃z (re-store) or after ~5s by undoTimer.
     property string undoText: ""
@@ -97,6 +99,13 @@ Item {
             if (root.peeking && root.current)
                 root.peekRevealed = true;
             event.accepted = true;
+        } else if (ctrl && k === Qt.Key_E) {
+            if (root.current) {
+                root.peekRevealed = false;
+                root.peekEditing = true;
+                root.peeking = true;
+            }
+            event.accepted = true;
         } else if (k === Qt.Key_Down || (ctrl && k === Qt.Key_J)) {
             root.index = Math.min(root.clampedIndex + 1, n - 1);
             event.accepted = true;
@@ -165,6 +174,13 @@ Item {
 
     onQueryChanged: root.index = 0
     onFilterChanged: root.index = 0
+    // Leaving peek always exits edit mode (and re-focuses the search field).
+    onPeekingChanged: {
+        if (!root.peeking) {
+            root.peekEditing = false;
+            search.forceActiveFocus();
+        }
+    }
 
     anchors.fill: parent
 
@@ -358,6 +374,7 @@ Item {
         visible: root.peeking
         entry: root.current
         revealed: root.peekRevealed
+        editing: root.peekEditing
         onRequestClose: root.peeking = false
     }
 }
