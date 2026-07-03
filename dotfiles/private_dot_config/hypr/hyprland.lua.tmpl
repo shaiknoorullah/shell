@@ -7,7 +7,7 @@
 
 local mod  = "SUPER"
 local rofi = "$HOME/.config/rofi/scripts"   -- $HOME expands in the exec shell
-local cs   = "$HOME/.nix-profile/bin/caelestia-shell"  -- host caelestia (distrobox quickshell removed)
+local cs   = "$HOME/.nix-profile/bin/caelestia-shell"  -- full path: Hyprland's PATH has no ~/.nix-profile/bin
 
 -- ── Environment (nvidia) ───────────────────────────────────────────────
 hl.env("LIBVA_DRIVER_NAME", "nvidia")
@@ -97,7 +97,7 @@ hl.window_rule({ match = { class = "^(zen-tab-switcher)$" },                    
 -- ── Layer rules: real glass on bars (compositor blur) ──────────────────
 hl.layer_rule({ match = { namespace = "waybar" },     blur = true })
 hl.layer_rule({ match = { namespace = "quickshell-.*" }, blur = true, ignore_alpha = 0.1 })
-hl.layer_rule({ match = { namespace = "caelestia-clipboard" }, blur = true, ignore_alpha = 0.2 })  -- frosted-glass clipboard overlay
+hl.layer_rule({ match = { namespace = "caelestia-clipboard" }, blur = true, ignore_alpha = 0.2 })  -- frosted-glass clipboard overlay (translucent card, no dim backdrop)
 
 -- The focus panel is a real floating window — float + center it; Hyprland's
 -- window border/rounding/shadow/blur (decoration{}) apply automatically.
@@ -106,19 +106,17 @@ hl.window_rule({ match = { title = "^(focus-panel)$" }, center = true })
 hl.window_rule({ match = { title = "^(focus-panel)$" }, size = "900 600" })
 hl.window_rule({ match = { title = "^(focus-panel)$" }, dim_around = true })    -- modal dim
 hl.window_rule({ match = { title = "^(focus-panel)$" }, stay_focused = true })  -- grab focus (keyboard + dim)
-hl.window_rule({ match = { title = "^(focus-panel)$" }, opaque = true })        -- de-faint: exempt from global opacity
+hl.window_rule({ match = { title = "^(focus-panel)$" }, opaque = true })        -- de-faint: exempt from global active/inactive_opacity
 
--- Wallpaper picker widget — same floating/centered/focused treatment.
-hl.window_rule({ match = { title = "^(wallpaper-picker)$" }, float = true })
-hl.window_rule({ match = { title = "^(wallpaper-picker)$" }, center = true })
-hl.window_rule({ match = { title = "^(wallpaper-picker)$" }, size = "1000 680" })
-hl.window_rule({ match = { title = "^(wallpaper-picker)$" }, stay_focused = true })
+-- (removed stale title="wallpaper-picker" rules — the live rules are class="wallpaper", below;
+--  those old ones never matched and one carried a stay_focused that would block screenshots)
 hl.layer_rule({ match = { namespace = "eww" },        blur = true })
 hl.layer_rule({ match = { namespace = "rofi" },       blur = true, ignore_alpha = 0.2 })
 
 -- ── Autostart ──────────────────────────────────────────────────────────
 hl.on("hyprland.start", function()
   hl.exec_cmd("~/.nix-profile/bin/caelestia-shell")           -- caelestia shell (Nix, nixGL-wrapped); owns wallpaper + notifications
+  hl.exec_cmd("~/.local/bin/wallpaper --restore")             -- swww daemon + restore last wallpaper (migrating off caelestia's wallpaper)
   -- (old quickshell-launch + swww wall.sh + dunst removed — caelestia replaces all three)
   hl.exec_cmd("hypridle")                                     -- idle → lock/screen-off
   hl.exec_cmd("nm-applet --indicator")
@@ -146,10 +144,10 @@ hl.bind(mod .. " + Tab",       hl.dsp.exec_cmd(rofi .. "/rofilaunch.sh w"))
 hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd(rofi .. "/rofilaunch.sh --run"))
 hl.bind(mod .. " + SHIFT + F", hl.dsp.exec_cmd(rofi .. "/rofilaunch.sh f"))
 hl.bind(mod .. " + SHIFT + D", hl.dsp.exec_cmd(rofi .. "/rofi-style-selector.sh"))
-hl.bind(mod .. " + C",         hl.dsp.exec_cmd(cs .. " ipc call clipboard toggle"))  -- caelestia clipboard
+hl.bind(mod .. " + C",         hl.dsp.exec_cmd(cs .. " ipc call clipboard toggle"))  -- caelestia clipboard (was rofi-clipboard.sh)
 hl.bind(mod .. " + SHIFT + B", hl.dsp.exec_cmd(rofi .. "/rofi-bluetooth.sh"))
-hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd(cs .. " ipc call drawers toggle launcher"))  -- caelestia launcher / wallpaper
-hl.bind("Print",               hl.dsp.exec_cmd(cs .. " ipc call picker open"))  -- caelestia region screenshot
+hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("kitty --class wallpaper --config ~/.config/kitty/otter.conf -e ~/.local/bin/wallpaper"))  -- wallpaper picker (otter-styled fzf + swww, no caelestia)
+hl.bind("Print",               hl.dsp.exec_cmd(cs .. " ipc call picker open"))  -- caelestia region screenshot (was rofi-screenshot.sh)
 hl.bind(mod .. " + CTRL + S",  hl.dsp.exec_cmd(rofi .. "/rofi-systemd.sh"))
 hl.bind(mod .. " + slash",     hl.dsp.exec_cmd(rofi .. "/rofi-websearch-v2.sh"))
 hl.bind(mod .. " + P",         hl.dsp.exec_cmd(rofi .. "/rofi-projects.sh"))
@@ -165,7 +163,18 @@ hl.bind(mod .. " + SHIFT + E", hl.dsp.exec_cmd(rofi .. "/rofi-power.sh"))
 hl.bind(mod .. " + SHIFT + A",      hl.dsp.exec_cmd("~/.local/bin/adhd-capture.sh"))
 hl.bind(mod .. " + SHIFT + X",      hl.dsp.exec_cmd("~/.local/bin/adhd-focus.sh status"))
 hl.bind(mod .. " + SHIFT + Return", hl.dsp.exec_cmd("~/.local/bin/adhd-start.sh"))
-hl.bind(mod .. " + A",              hl.dsp.exec_cmd(cs .. " ipc call leftbar toggle"))  -- summon left "chasing" bar (caelestia)
+hl.bind(mod .. " + A",              hl.dsp.exec_cmd(cs .. " ipc call leftbar toggle"))  -- summon left "chasing" bar
+hl.bind(mod .. " + D",              hl.dsp.exec_cmd("kitty --config ~/.config/kitty/otter.conf --class otter -e ~/.cargo/bin/otter-launcher"))  -- otter-launcher (floating panel)
+hl.window_rule({ match = { class = "^(otter)$" }, float = true })
+hl.window_rule({ match = { class = "^(otter)$" }, center = true })
+hl.window_rule({ match = { class = "^(otter)$" }, size = "660 360" })
+hl.window_rule({ match = { class = "^(otter)$" }, dim_around = true })
+hl.window_rule({ match = { class = "^(otter)$" }, rounding = 5 })   -- stay_focused REMOVED (it blocked Print-screenshot)
+hl.window_rule({ match = { class = "^(otter)$" }, opaque = true })
+hl.window_rule({ match = { class = "^(wallpaper)$" }, float = true })
+hl.window_rule({ match = { class = "^(wallpaper)$" }, center = true })
+hl.window_rule({ match = { class = "^(wallpaper)$" }, size = "1100 620" })
+hl.window_rule({ match = { class = "^(wallpaper)$" }, rounding = 5 })
 
 -- Media keys (locked = work on lockscreen; repeating = hold to repeat)
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("pactl set-sink-volume @DEFAULT_SINK@ +5%"), { repeating = true })

@@ -1,0 +1,52 @@
+# otter-launcher — edit freely. [[modules]] = prefix + cmd; {} = your input.
+[general]
+default_module = "ws"
+vi_mode = false
+loop_mode = false
+esc_to_abort = true
+cheatsheet_entry = "?"
+cheatsheet_viewer = "less -R; clear"
+
+[interface]
+suggestion_mode = "list"
+suggestion_lines = 5
+customized_list_order = true
+header = "\n  \u001b[35;1motter\u001b[0m \u001b[90m· launcher\u001b[0m\n"
+separator = "  \u001b[90m─────────────────────────────\u001b[0m"
+footer = "  \u001b[90mc · ws · sh · wp      ? cheatsheet\u001b[0m"
+place_holder = "type a prefix…"
+prefix_padding = 3
+list_prefix = "    "
+selection_prefix = "  \u001b[35;1m▌ \u001b[0m"
+prefix_color = "\u001b[35m"
+description_color = "\u001b[90m"
+place_holder_color = "\u001b[38;5;240m"
+cursor_shape = 6
+
+[[modules]]
+description = "project context"
+prefix = "c"
+cmd = "/home/devsupreme/.local/bin/ctx '{}'"
+with_argument = true
+unbind_proc = true
+
+[[modules]]
+description = "web search"
+prefix = "ws"
+cmd = "xdg-open 'https://duckduckgo.com/?q={}'"
+with_argument = true
+url_encode = true
+unbind_proc = true
+
+[[modules]]
+description = "shell"
+prefix = "sh"
+cmd = "kitty --hold -e sh -c '{}'"
+with_argument = true
+unbind_proc = true
+
+[[modules]]
+description = "wallpaper picker"
+prefix = "wp"
+cmd = "kitty --class wallpaper --config /home/devsupreme/.config/kitty/otter.conf -e /home/devsupreme/.local/bin/wallpaper"
+unbind_proc = true
