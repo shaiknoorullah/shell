@@ -116,7 +116,8 @@ hl.layer_rule({ match = { namespace = "rofi" },       blur = true, ignore_alpha 
 -- ── Autostart ──────────────────────────────────────────────────────────
 hl.on("hyprland.start", function()
   hl.exec_cmd("~/.nix-profile/bin/caelestia-shell")           -- caelestia shell (Nix, nixGL-wrapped); owns wallpaper + notifications
-  hl.exec_cmd("~/.local/bin/wallpaper --restore")             -- swww daemon + restore last wallpaper (migrating off caelestia's wallpaper)
+  hl.exec_cmd("~/.local/bin/wallpaper --restore")
+  hl.exec_cmd("/home/devsupreme/.local/bin/clipse -listen")   -- clipboard-history daemon for the clipse TUI             -- swww daemon + restore last wallpaper (migrating off caelestia's wallpaper)
   -- (old quickshell-launch + swww wall.sh + dunst removed — caelestia replaces all three)
   hl.exec_cmd("hypridle")                                     -- idle → lock/screen-off
   hl.exec_cmd("nm-applet --indicator")
@@ -144,7 +145,7 @@ hl.bind(mod .. " + Tab",       hl.dsp.exec_cmd("kitty --config ~/.config/kitty/o
 hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd("kitty --config ~/.config/kitty/otter.conf --class otter -e ~/.cargo/bin/otter-launcher run"))
 hl.bind(mod .. " + SHIFT + F", hl.dsp.exec_cmd("kitty --config ~/.config/kitty/otter.conf --class otter -e ~/.cargo/bin/otter-launcher fb"))
 hl.bind(mod .. " + SHIFT + D", hl.dsp.exec_cmd(rofi .. "/rofi-style-selector.sh"))
-hl.bind(mod .. " + C",         hl.dsp.exec_cmd(cs .. " ipc call clipboard toggle"))  -- caelestia clipboard (was rofi-clipboard.sh)
+hl.bind(mod .. " + C",         hl.dsp.exec_cmd("kitty --class clipse --config ~/.config/kitty/otter.conf -e /home/devsupreme/.local/bin/clipse"))  -- caelestia clipboard (was rofi-clipboard.sh)
 hl.bind(mod .. " + SHIFT + B", hl.dsp.exec_cmd("kitty --class bluetuith --config ~/.config/kitty/bluetuith.conf -e bluetuith"))  -- bluetuith panel (was rofi-bluetooth.sh)
 hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("kitty --class wallpaper --config ~/.config/kitty/otter.conf -e ~/.local/bin/wallpaper"))  -- wallpaper picker (otter-styled fzf + swww, no caelestia)
 hl.bind("Print",               hl.dsp.exec_cmd(cs .. " ipc call picker open"))  -- caelestia region screenshot (was rofi-screenshot.sh)
@@ -182,6 +183,12 @@ hl.window_rule({ match = { class = "^(bluetuith)$" }, float = true })
 hl.window_rule({ match = { class = "^(bluetuith)$" }, center = true })
 hl.window_rule({ match = { class = "^(bluetuith)$" }, size = "720 520" })
 hl.window_rule({ match = { class = "^(bluetuith)$" }, rounding = 5 })
+
+-- clipse: floating Dracula clipboard TUI (otter `cl` / Super+C)
+hl.window_rule({ match = { class = "^(clipse)$" }, float = true })
+hl.window_rule({ match = { class = "^(clipse)$" }, center = true })
+hl.window_rule({ match = { class = "^(clipse)$" }, size = "720 520" })
+hl.window_rule({ match = { class = "^(clipse)$" }, rounding = 5 })
 
 -- Media keys (locked = work on lockscreen; repeating = hold to repeat)
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("pactl set-sink-volume @DEFAULT_SINK@ +5%"), { repeating = true })

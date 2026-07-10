@@ -124,3 +124,9 @@ cmd = "/home/devsupreme/.config/otter-launcher/scripts/otter-systemd.sh"
 description = "  files"
 prefix = "fb"
 cmd = "/home/devsupreme/.config/otter-launcher/scripts/otter-files.sh"
+
+[[modules]]
+description = "  clipboard"
+prefix = "cl"
+cmd = "kitty --class clipse --config /home/devsupreme/.config/kitty/otter.conf -e /home/devsupreme/.local/bin/clipse"
+unbind_proc = true
