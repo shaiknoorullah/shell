@@ -104,3 +104,23 @@ cmd = "/home/devsupreme/.config/otter-launcher/scripts/otter-obsidian.sh"
 description = "  zen tabs"
 prefix = "zt"
 cmd = "/home/devsupreme/.config/otter-launcher/scripts/otter-tabs.sh"
+
+[[modules]]
+description = "  git identity"
+prefix = "git"
+cmd = "/home/devsupreme/.config/otter-launcher/scripts/otter-git.sh"
+
+[[modules]]
+description = "  bookmarks"
+prefix = "bm"
+cmd = "/home/devsupreme/.config/otter-launcher/scripts/otter-bookmarks.sh"
+
+[[modules]]
+description = "  systemd"
+prefix = "sys"
+cmd = "/home/devsupreme/.config/otter-launcher/scripts/otter-systemd.sh"
+
+[[modules]]
+description = "  files"
+prefix = "fb"
+cmd = "/home/devsupreme/.config/otter-launcher/scripts/otter-files.sh"

@@ -67,4 +67,10 @@ parses with 12 modules.
 - **obsidian** (Super+N) → otter `ob` (`otter-obsidian.sh`): daily / open vault / search (1178 notes) / new-note wizard over `~/powerhouse`.
 - **zen tabs** (Super+comma) → otter `zt` (`otter-tabs.sh`): brotab fuzzy switcher that switches **in the existing zen window** (`bt activate` + focus, no new window), `ctrl-d` close / `ctrl-y` copy-url.
 
-### Phase 2 remaining (your call): file-browser, systemd (pkexec), git-profile, bookmarks (zen sqlite).
+### Phase 2 DONE (2026-07-10) — all rofi menus now migrated
+- **files** (`fb`, Super+Shift+F) — fzf directory navigator (no yazi/lf installed; rofi's filebrowser modi had no CLI equivalent). `otter-files.sh`.
+- **systemd** (`sys`, Super+CTRL+S) — fzf service list (color-coded status) → start/stop/restart via `pkexec` + view-logs in a kitty (`journalctl -f`). `otter-systemd.sh`.
+- **git identity** (`git`, Super+G) — `otter-git.sh`. **Needs `~/.config/rofi/scripts/git-profiles.conf` populated** with your real `label|user|email` lines; right now it falls back to the example template (Work/Personal placeholders).
+- **bookmarks** (`bm`, Super+Shift+O) — zen `places.sqlite` (via `zen-utils.sh` WAL-safe copy) → fzf → opens in a new zen tab. `otter-bookmarks.sh`.
+
+18 otter modules total. Every original rofi script is still present as a fallback; all binds git-reversible.
