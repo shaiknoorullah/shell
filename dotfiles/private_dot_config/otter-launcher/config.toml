@@ -10,13 +10,13 @@ delay_startup = 30
 
 [interface]
 suggestion_mode = "list"
-suggestion_lines = 4
+suggestion_lines = 12
 customized_list_order = true
-header_cmd = "$HOME/.config/otter-launcher/scripts/otter-banner.sh"
+header_cmd = "$HOME/.config/otter-launcher/scripts/otter-header.sh"
 header_cmd_trimmed_lines = 0
-header = "$($HOME/.config/otter-launcher/scripts/otter-stats.sh)\n    \u001b[38;2;189;147;249m❯\u001b[0m "
-separator = "    \u001b[38;2;98;114;164m──────────────────────────────\u001b[0m"
-footer = ""
+header = "\n  \u001b[38;2;189;147;249m❯\u001b[0m "
+separator = ""
+footer = "\n  \u001b[38;2;98;114;164m──────────────────────────────────────────────────────────\u001b[0m\n  \u001b[38;2;189;147;249m↑↓\u001b[38;2;98;114;164m move   \u001b[38;2;189;147;249m⏎\u001b[38;2;98;114;164m run   \u001b[38;2;189;147;249m⇥\u001b[38;2;98;114;164m complete   \u001b[38;2;189;147;249m?\u001b[38;2;98;114;164m cheatsheet\u001b[0m"
 place_holder = "type a prefix…"
 prefix_padding = 3
 list_prefix = "     "
@@ -94,3 +94,13 @@ cmd = "/home/devsupreme/.config/otter-launcher/scripts/otter-projects.sh"
 description = "  tmux"
 prefix = "tm"
 cmd = "/home/devsupreme/.config/otter-launcher/scripts/otter-tmux.sh"
+
+[[modules]]
+description = "  obsidian"
+prefix = "ob"
+cmd = "/home/devsupreme/.config/otter-launcher/scripts/otter-obsidian.sh"
+
+[[modules]]
+description = "  zen tabs"
+prefix = "zt"
+cmd = "/home/devsupreme/.config/otter-launcher/scripts/otter-tabs.sh"

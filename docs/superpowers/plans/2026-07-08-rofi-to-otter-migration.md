@@ -62,4 +62,9 @@ parses with 12 modules.
 4. **run module** uses `compgen -c` (5247 entries) with `--print-query`, so you can also type an
    arbitrary command, not just pick one.
 
-### Phase 2 still open (your call): file-browser, systemd, git-profile, bookmarks, obsidian.
+### Update 2026-07-10 (confirmed working)
+- **Launcher TUI redesign** — dropped banner-top; now a full-panel faded-otter Dracula background with bluetuith-style chrome: header bar (`user@host` left + stats right-aligned), full-width dividers, footer keybind bar, all 14 modules shown. New: `otter-header.sh`. (`otter-banner.sh` / `otter-stats.sh` now unused but kept.)
+- **obsidian** (Super+N) → otter `ob` (`otter-obsidian.sh`): daily / open vault / search (1178 notes) / new-note wizard over `~/powerhouse`.
+- **zen tabs** (Super+comma) → otter `zt` (`otter-tabs.sh`): brotab fuzzy switcher that switches **in the existing zen window** (`bt activate` + focus, no new window), `ctrl-d` close / `ctrl-y` copy-url.
+
+### Phase 2 remaining (your call): file-browser, systemd (pkexec), git-profile, bookmarks (zen sqlite).
