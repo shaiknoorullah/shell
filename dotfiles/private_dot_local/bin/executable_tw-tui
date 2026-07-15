@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# tw-tui — launch taskwarrior-tui against the REAL taskwarrior 2.6.2 (/usr/bin/task).
+# ~/.local/bin/task is an empty 3.51.1 SQLite build; putting /usr/bin first in PATH
+# makes every `task` subprocess taskwarrior-tui spawns resolve to 2.6.2 (data in ~/.task).
+exec env PATH="/usr/bin:$HOME/.cargo/bin:$PATH" "$HOME/.cargo/bin/taskwarrior-tui" "$@"
