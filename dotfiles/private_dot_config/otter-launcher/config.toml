@@ -130,3 +130,9 @@ description = "  clipboard"
 prefix = "cl"
 cmd = "kitty --class clipse --config /home/devsupreme/.config/kitty/otter.conf -e /home/devsupreme/.local/bin/clipse"
 unbind_proc = true
+
+[[modules]]
+description = "  tasks"
+prefix = "tw"
+cmd = "kitty --class tasktui --config /home/devsupreme/.config/kitty/otter.conf -e /home/devsupreme/.local/bin/tw-tui"
+unbind_proc = true

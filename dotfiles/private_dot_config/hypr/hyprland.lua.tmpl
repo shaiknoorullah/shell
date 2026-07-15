@@ -131,6 +131,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("kitty")
   hl.exec_cmd("zen-browser")
   hl.exec_cmd("code")
+  hl.exec_cmd("[workspace special:tasks silent] kitty --class tasktui --config ~/.config/kitty/otter.conf -e ~/.local/bin/tw-tui")  -- open the daily driver at login (clock-in / resume)
 end)
 
 -- ═══════════════════════════════════════════════════════════════════════
@@ -165,7 +166,7 @@ hl.bind(mod .. " + SHIFT + E", hl.dsp.exec_cmd("kitty --config ~/.config/kitty/o
 -- ── ADHD engine (Phase 1) ──────────────────────────────────────────────
 hl.bind(mod .. " + SHIFT + A",      hl.dsp.exec_cmd("~/.local/bin/adhd-capture.sh"))
 hl.bind(mod .. " + SHIFT + X",      hl.dsp.exec_cmd("~/.local/bin/adhd-focus.sh status"))
-hl.bind(mod .. " + SHIFT + Return", hl.dsp.exec_cmd("~/.local/bin/adhd-start.sh"))
+hl.bind(mod .. " + SHIFT + Return", hl.dsp.exec_cmd("kitty --class tasktui --config ~/.config/kitty/otter.conf -e ~/.local/bin/tw-tui"))  -- taskwarrior-tui daily driver (was caelestia focus panel)
 hl.bind(mod .. " + A",              hl.dsp.exec_cmd(cs .. " ipc call leftbar toggle"))  -- summon left "chasing" bar
 hl.bind(mod .. " + D",              hl.dsp.exec_cmd("kitty --config ~/.config/kitty/otter.conf --class otter -e ~/.cargo/bin/otter-launcher"))  -- otter-launcher (floating panel)
 hl.window_rule({ match = { class = "^(otter)$" }, float = true })
@@ -190,6 +191,12 @@ hl.window_rule({ match = { class = "^(clipse)$" }, float = true })
 hl.window_rule({ match = { class = "^(clipse)$" }, center = true })
 hl.window_rule({ match = { class = "^(clipse)$" }, size = "720 520" })
 hl.window_rule({ match = { class = "^(clipse)$" }, rounding = 5 })
+
+-- taskwarrior-tui: floating Dracula daily-driver panel (Super+Shift+Return / otter `tw`)
+hl.window_rule({ match = { class = "^(tasktui)$" }, float = true })
+hl.window_rule({ match = { class = "^(tasktui)$" }, center = true })
+hl.window_rule({ match = { class = "^(tasktui)$" }, size = "1100 720" })
+hl.window_rule({ match = { class = "^(tasktui)$" }, rounding = 5 })
 
 -- Media keys (locked = work on lockscreen; repeating = hold to repeat)
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("pactl set-sink-volume @DEFAULT_SINK@ +5%"), { repeating = true })
