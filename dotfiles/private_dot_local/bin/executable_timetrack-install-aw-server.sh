@@ -26,9 +26,11 @@ curl -fsSL -o pkg "$url"
 case "$url" in *.zip) unzip -q pkg ;; *.tar.gz) tar xzf pkg ;; esac
 
 bin="$(find "$TMP" -type f -perm -u+x -name 'aw-server-rust' | head -1)"
-[ -n "$bin" ] || bin="$(find "$TMP" -type f -perm -u+x -name 'aw-server' | head -1)"
+[ -n "$bin" ] || bin="$(find "$TMP" -type f -perm -u+x -name 'aw-server' ! -path '*/aw-server/aw-server' | head -1)"
 [ -n "$bin" ] || bin="$(find "$TMP" -type f -name 'aw-server*' ! -name '*.zip' ! -name '*.tar.gz' ! -name '*.service' | head -1)"
 [ -n "$bin" ] || { echo "ERROR: aw-server binary not found in archive"; exit 1; }
 
 install -m 0755 "$bin" "$DEST"
+help_out="$("$DEST" --help 2>&1 || true)"
+echo "$help_out" | grep -qi 'rust' || { echo "ERROR: installed aw-server is not the Rust build — refusing"; rm -f "$DEST"; exit 1; }
 echo "Installed: $DEST"; "$DEST" --version 2>/dev/null || true
