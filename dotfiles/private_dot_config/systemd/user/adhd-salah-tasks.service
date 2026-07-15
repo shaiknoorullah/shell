@@ -1,0 +1,6 @@
+[Unit]
+Description=Generate today's salah tasks from prayer-times.conf
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/adhd-salah-tasks.sh

@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily salah-task generation (+ at login)
+
+[Timer]
+OnCalendar=*-*-* 00:10:00
+OnStartupSec=30
+Persistent=true
+
+[Install]
+WantedBy=timers.target

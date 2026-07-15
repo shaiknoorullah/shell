@@ -6,6 +6,11 @@ news.version=2.6.0
 uda.estimate.type=duration
 uda.estimate.label=Est
 
+# Salah quality tracking (Stage-2 time-tracking system)
+uda.salah_status.type=string
+uda.salah_status.label=Salah
+uda.salah_status.values=jamaah,alone,qaza,missed
+
 # Contexts (work/lab/agents/personal) — read filters
 context.work.read=project ~ work
 context.lab.read=project ~ lab
