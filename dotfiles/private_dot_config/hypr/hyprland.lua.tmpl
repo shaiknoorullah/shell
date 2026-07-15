@@ -118,6 +118,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("~/.nix-profile/bin/caelestia-shell")           -- caelestia shell (Nix, nixGL-wrapped); owns wallpaper + notifications
   hl.exec_cmd("~/.local/bin/wallpaper --restore")
   hl.exec_cmd("/home/devsupreme/.local/bin/clipse -listen")   -- clipboard-history daemon for the clipse TUI             -- swww daemon + restore last wallpaper (migrating off caelestia's wallpaper)
+  hl.exec_cmd("systemctl --user start awatcher.service")     -- ActivityWatch window+AFK watcher (needs Wayland env)
   -- (old quickshell-launch + swww wall.sh + dunst removed — caelestia replaces all three)
   hl.exec_cmd("hypridle")                                     -- idle → lock/screen-off
   hl.exec_cmd("nm-applet --indicator")
