@@ -21,16 +21,16 @@ api="https://api.github.com/repos/2e3s/awatcher/releases/latest"
 assets="$(curl -fsSL "$api" | grep -o '"browser_download_url": *"[^"]*"' | cut -d'"' -f4)"
 
 bin=""
-zip_url="$(echo "$assets" | grep -iE '/aw-awatcher\.zip$' | head -1)"
+zip_url="$(echo "$assets" | grep -iE '/aw-awatcher\.zip$' | head -1 || true)"
 if [ -n "$zip_url" ]; then
   echo "Using: $zip_url"
   cd "$TMP"; curl -fsSL -o dl.zip "$zip_url"; unzip -q dl.zip
-  [ -f "$TMP/aw-awatcher" ] && bin="$TMP/aw-awatcher"
+  bin="$(find "$TMP" -maxdepth 2 -type f -name 'aw-awatcher' | head -1)"
 fi
 
 if [ -z "$bin" ]; then
   # No thin-client zip — fall back to the thin-client .deb.
-  deb_url="$(echo "$assets" | grep -iE '/aw-awatcher[_-][^/]*\.deb$' | head -1)"
+  deb_url="$(echo "$assets" | grep -iE '/aw-awatcher[_-][^/]*\.deb$' | head -1 || true)"
   [ -n "$deb_url" ] || { echo "ERROR: no thin-client (aw-awatcher) asset on latest release"; exit 1; }
   echo "Using: $deb_url"
   cd "$TMP"; curl -fsSL -o pkg.deb "$deb_url"
