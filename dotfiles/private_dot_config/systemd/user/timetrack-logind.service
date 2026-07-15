@@ -1,0 +1,12 @@
+[Unit]
+Description=timetrack — systemd-logind session/lock/suspend capture
+After=default.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/share/timetrack/venv/bin/python %h/.local/bin/timetrack-logind.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
