@@ -4,3 +4,5 @@
 build/
 .cache/
 logs
+# SDD scratch (progress ledger, review packages) — never commit
+.superpowers/
