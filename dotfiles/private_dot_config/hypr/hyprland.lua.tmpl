@@ -131,7 +131,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("kitty")
   hl.exec_cmd("zen-browser")
   hl.exec_cmd("code")
-  hl.exec_cmd("[workspace special:tasks silent] kitty --class tasktui --config ~/.config/kitty/otter.conf -e ~/.local/bin/tw-tui")  -- open the daily driver at login (clock-in / resume)
+  hl.exec_cmd("[workspace special:tasks silent] kitty --class tasktui --config ~/.config/kitty/tasktui.conf -e ~/.local/bin/tw-tui")  -- open the daily driver at login (clock-in / resume)
 end)
 
 -- ═══════════════════════════════════════════════════════════════════════
@@ -166,7 +166,7 @@ hl.bind(mod .. " + SHIFT + E", hl.dsp.exec_cmd("kitty --config ~/.config/kitty/o
 -- ── ADHD engine (Phase 1) ──────────────────────────────────────────────
 hl.bind(mod .. " + SHIFT + A",      hl.dsp.exec_cmd("~/.local/bin/adhd-capture.sh"))
 hl.bind(mod .. " + SHIFT + X",      hl.dsp.exec_cmd("~/.local/bin/adhd-focus.sh status"))
-hl.bind(mod .. " + SHIFT + Return", hl.dsp.exec_cmd("kitty --class tasktui --config ~/.config/kitty/otter.conf -e ~/.local/bin/tw-tui"))  -- taskwarrior-tui daily driver (was caelestia focus panel)
+hl.bind(mod .. " + SHIFT + Return", hl.dsp.exec_cmd("kitty --class tasktui --config ~/.config/kitty/tasktui.conf -e ~/.local/bin/tw-tui"))  -- taskwarrior-tui daily driver (was caelestia focus panel)
 hl.bind(mod .. " + SHIFT + P", hl.dsp.exec_cmd("~/.local/bin/adhd-break.sh"))  -- pause + monitor-off + lock (break)
 hl.bind(mod .. " + A",              hl.dsp.exec_cmd(cs .. " ipc call leftbar toggle"))  -- summon left "chasing" bar
 hl.bind(mod .. " + D",              hl.dsp.exec_cmd("kitty --config ~/.config/kitty/otter.conf --class otter -e ~/.cargo/bin/otter-launcher"))  -- otter-launcher (floating panel)
