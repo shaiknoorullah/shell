@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - **Scope = Stage 2 only.** Do NOT touch the Stage-1 capture services (`aw-server`, `awatcher`, `timetrack-logind`). Do NOT build the Stage-3 SQLite/Datasette/Obsidian rollup.
-- **taskwarrior binary MUST be `/usr/bin/task` (2.6.2)** everywhere taskwarrior-tui or a script runs `task` — the empty `~/.local/bin/task` (3.51.1) must never win PATH. Real data is in `~/.task` (11 tasks); the `on-modify.timewarrior` hook + timewarrior already work with 2.6.2. NO 2.x→3.x migration.
+- **taskwarrior binary MUST be linuxbrew 3.4.2 (`/home/linuxbrew/.linuxbrew/bin/task`)** everywhere taskwarrior-tui or a script runs `task` — put `/home/linuxbrew/.linuxbrew/bin` first in PATH (use `TASK="${TASK_BIN:-/home/linuxbrew/.linuxbrew/bin/task}"` in scripts, matching `adhd-salah-tasks.sh`). NOTE: `~/.local/bin/task` is **go-task** (a Taskfile runner), NOT taskwarrior — it must never win PATH; `/usr/bin/task` 2.6.2 is retired. **[SUPERSEDED 2026-07-18]** the original "pin 2.6.2 / NO migration" rule is dead: taskwarrior-tui 0.27 requires 3.x, so data was migrated to `~/.task/taskchampion.sqlite3` (3.x) and the `on-modify.timewarrior` hook now runs under 3.4.2.
 - **quickshell stays intact** — only stop *calling* the focus panel (rebind `Super+Shift+Enter` off `~/.local/bin/adhd-start.sh`). Fully reversible. Full removal is a separate project.
 - **`hyprland.lua` is a chezmoi TEMPLATE** with `{{ .dracula.* }}` directives (`~/src/caelestia-shell/dotfiles/private_dot_config/hypr/hyprland.lua.tmpl`). Edit the live file AND the `.tmpl` by hand with identical changes; NEVER `chezmoi add` the hypr file.
 - **Break hotkey = `Super+Shift+P`** (free): monitor-off + lock + break-marker. Lock via `loginctl lock-session` only (do NOT call hyprlock directly — hypridle already maps the logind Lock signal → hyprlock, and the Stage-1 daemon records the Lock/Unlock).
@@ -373,8 +373,8 @@ Create `~/.local/bin/adhd-salah-pick.sh`:
 # adhd-salah-pick.sh [PrayerName] — mark a salah's status with ONE key and complete it.
 # Picks the target task: the named prayer's pending task today, else the nearest-due pending salah.
 set -uo pipefail
-export PATH="/usr/bin:$HOME/.local/bin:$PATH"
-TASK=/usr/bin/task
+export PATH="/home/linuxbrew/.linuxbrew/bin:$HOME/.local/bin:$PATH"
+TASK="${TASK_BIN:-/home/linuxbrew/.linuxbrew/bin/task}"   # taskwarrior 3.4.2 (data migrated to ~/.task/taskchampion.sqlite3 2026-07-18)
 today="$(date +%Y-%m-%d)"
 want="${1:-}"
 sel_id() { $TASK rc.verbose=nothing +salah +PENDING "$@" ids 2>/dev/null | tr ' ' '\n' | grep -E '^[0-9]+$' | head -1; }
@@ -407,7 +407,7 @@ Create `~/.local/bin/adhd-salah-nudge.sh`:
 # one-key answer is the picker (opened via the keybind or, if the notifier supports
 # actions, the notification's default action). Streak-positive wording, never guilt.
 set -uo pipefail
-export PATH="/usr/bin:$HOME/.local/bin:$PATH"
+export PATH="/home/linuxbrew/.linuxbrew/bin:$HOME/.local/bin:$PATH"
 name="${1:-Salah}"
 # notify-send with a default action; if the notifier (caelestia) supports actions, activating
 # it opens the picker. Harmless if actions are unsupported — it's still a reminder.
@@ -443,7 +443,7 @@ Create `~/.local/bin/adhd-salah-schedule.sh`:
 # adhd-salah-schedule.sh — schedule today's 5 salah nudges as transient user timers at each
 # iqamah time. Re-run daily (times change). Skips prayer times already past for today.
 set -uo pipefail
-export PATH="/usr/bin:$PATH"
+export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
 CONF="$HOME/.config/adhd/prayer-times.conf"
 [ -f "$CONF" ] || exit 0
 now="$(date +%H%M)"
@@ -552,7 +552,7 @@ Create `~/src/caelestia-shell/docs/superpowers/notes/2026-07-16-timetrack-stage2
 - Super+Shift+; — one-key salah logger (jamaah/alone/qaza/missed).
 
 ## Pieces
-- `~/.local/bin/tw-tui` — launches taskwarrior-tui with /usr/bin/task (2.6.2) pinned in PATH.
+- `~/.local/bin/tw-tui` — launches taskwarrior-tui with linuxbrew taskwarrior 3.4.2 (`/home/linuxbrew/.linuxbrew/bin/task`) pinned first in PATH.
 - `~/.local/bin/adhd-break.sh` / `adhd-break-end.sh` — break start / unlock handler (hypridle unlock_cmd).
 - `~/.local/bin/adhd-salah-tasks.sh` (+ .timer) — daily generates 5 salah tasks from prayer-times.conf.
 - `~/.local/bin/adhd-salah-schedule.sh` (+ .timer) — daily arms per-prayer nudge timers.
@@ -561,11 +561,11 @@ Create `~/src/caelestia-shell/docs/superpowers/notes/2026-07-16-timetrack-stage2
 
 ## Health
     systemctl --user list-timers 'adhd-salah-*' --no-pager
-    /usr/bin/task rc.verbose=nothing +salah project:salah list
-    env PATH=/usr/bin:$PATH task --version   # must be 2.6.2
+    /home/linuxbrew/.linuxbrew/bin/task rc.verbose=nothing +salah project:salah list
+    env PATH=/home/linuxbrew/.linuxbrew/bin:$PATH task --version   # must be 3.4.2
 
 ## Notes
-- taskwarrior data lives in ~/.task (2.6.2). NEVER let ~/.local/bin/task (3.51.1) win PATH.
+- taskwarrior data lives in ~/.task/taskchampion.sqlite3 (3.x, migrated 2026-07-18). Canonical binary = linuxbrew 3.4.2 (`/home/linuxbrew/.linuxbrew/bin/task`). NOTE: `~/.local/bin/task` is go-task (a Taskfile runner), NOT taskwarrior — never let it win PATH; /usr/bin/task 2.6.2 is retired.
 - Notifications route through caelestia; the salah picker keybind is the reliable one-key path
   regardless of notification-action support.
 - quickshell focus panel is only unbound (Super+Shift+Enter rebound), not removed — reversible.
