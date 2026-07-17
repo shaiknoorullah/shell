@@ -12,7 +12,7 @@
 # descriptions/values can contain spaces and special characters safely.
 set -uo pipefail
 export PATH="$HOME/.local/bin:$PATH"
-TASK="${TASK_BIN:-/usr/bin/task}"
+TASK="${TASK_BIN:-/home/linuxbrew/.linuxbrew/bin/task}"
 
 q="$HOME/.cache/adhd/task-cmd"
 [ -f "$q" ] || exit 0

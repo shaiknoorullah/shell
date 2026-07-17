@@ -2,8 +2,8 @@
 # adhd-salah-tasks.sh — create today's 5 salah tasks (tag salah, project:salah, due=iqamah)
 # from ~/.config/adhd/prayer-times.conf. Idempotent: skips a prayer already created today.
 set -uo pipefail
-export PATH="/usr/bin:$PATH"
-TASK=/usr/bin/task
+export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+TASK="${TASK_BIN:-/home/linuxbrew/.linuxbrew/bin/task}"   # taskwarrior 3.x (data migrated 2026-07-18)
 CONF="$HOME/.config/adhd/prayer-times.conf"
 [ -f "$CONF" ] || { echo "no prayer-times.conf"; exit 0; }
 today="$(date +%Y-%m-%d)"

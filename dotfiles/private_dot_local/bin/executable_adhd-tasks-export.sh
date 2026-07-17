@@ -3,7 +3,7 @@
 # drawer reads (the Arch container's taskwarrior 3.x can't read the host's 2.6.2
 # data, so the HOST exports JSON here and quickshell just `cat`s it).
 set -uo pipefail
-TASK="${TASK_BIN:-/usr/bin/task}"
+TASK="${TASK_BIN:-/home/linuxbrew/.linuxbrew/bin/task}"
 dir="$HOME/.cache/adhd"
 mkdir -p "$dir"
 # Pending tasks (the panel's main list) — full fields incl. project/tags/

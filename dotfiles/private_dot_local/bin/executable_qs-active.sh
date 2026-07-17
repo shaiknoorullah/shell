@@ -13,7 +13,7 @@
 #   which under `set -e` would kill the script exactly when a task IS active.
 set -uo pipefail
 
-TASK="${TASK_BIN:-/usr/bin/task}"
+TASK="${TASK_BIN:-/home/linuxbrew/.linuxbrew/bin/task}"
 
 json_escape() {
     local s="$1"

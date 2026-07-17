@@ -20,7 +20,7 @@
 set -euo pipefail
 
 # taskwarrior binary (go-task shadows `task` in PATH); honored by adhd-focus.sh.
-export TASK_BIN="${TASK_BIN:-/usr/bin/task}"
+export TASK_BIN="${TASK_BIN:-/home/linuxbrew/.linuxbrew/bin/task}"
 
 # Resolve sibling backends from this script's own directory so the island works
 # regardless of cwd.

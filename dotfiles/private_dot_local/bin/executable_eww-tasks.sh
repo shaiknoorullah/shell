@@ -11,13 +11,13 @@
 #    {"id":2,"desc":"review FR-006 PR","meta":"work","active":false,"icon":"󰄱"}]
 #
 # - Taskwarrior is invoked via $TASK (TASK_BIN override) because go-task
-#   shadows `task` on PATH; default /usr/bin/task.
+#   shadows `task` on PATH; default /home/linuxbrew/.linuxbrew/bin/task.
 # - `meta` is the live elapsed (M:SS-ish from timew) for the active row, else
 #   the task's primary tag/project so the row reads like the mockup.
 # - Robust: any failure / no tasks emits "[]" so the defpoll never breaks.
 set -euo pipefail
 
-TASK="${TASK_BIN:-/usr/bin/task}"
+TASK="${TASK_BIN:-/home/linuxbrew/.linuxbrew/bin/task}"
 JQ="${JQ_BIN:-jq}"
 
 # Max rows to surface (the mockup shows ~3). Keep the bar calm, not a backlog.

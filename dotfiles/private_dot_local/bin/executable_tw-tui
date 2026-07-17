@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# tw-tui — launch taskwarrior-tui against the REAL taskwarrior 2.6.2 (/usr/bin/task).
-# ~/.local/bin/task is an empty 3.51.1 SQLite build; putting /usr/bin first in PATH
-# makes every `task` subprocess taskwarrior-tui spawns resolve to 2.6.2 (data in ~/.task).
-exec env PATH="/usr/bin:$HOME/.cargo/bin:$PATH" "$HOME/.cargo/bin/taskwarrior-tui" "$@"
+# tw-tui — launch taskwarrior-tui against taskwarrior 3.x (Homebrew: /home/linuxbrew/.linuxbrew/bin/task).
+# taskwarrior-tui 0.27 REQUIRES taskwarrior 3.x; data lives in ~/.task/taskchampion.sqlite3 (migrated
+# from the old 2.6.2 flat-files 2026-07-18). linuxbrew is put first in PATH so every `task` subprocess
+# taskwarrior-tui spawns is the 3.x binary — never /usr/bin's retired 2.6.2, never go-task.
+exec env PATH="/home/linuxbrew/.linuxbrew/bin:$HOME/.cargo/bin:$PATH" "$HOME/.cargo/bin/taskwarrior-tui" "$@"

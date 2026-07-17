@@ -6,7 +6,7 @@
 # 2.6.2 + the timewarrior hook) and refreshes the task snapshot.
 set -uo pipefail
 export PATH="$HOME/.local/bin:$PATH"
-TASK="${TASK_BIN:-/usr/bin/task}"
+TASK="${TASK_BIN:-/home/linuxbrew/.linuxbrew/bin/task}"
 
 req_file="$HOME/.cache/adhd/start-request"
 [ -f "$req_file" ] || exit 0
