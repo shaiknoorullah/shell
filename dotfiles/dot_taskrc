@@ -30,6 +30,7 @@ report.today.sort=urgency-
 
 # ── Dracula theme (taskwarrior + taskwarrior-tui) — added 2026-07-18 ──
 rc.color=on
+color.label=bold color231 on color238 # column-header row (ID/Active/Age/…): bold white on a Dracula current-line bar — taskwarrior-tui reads color.label for its header style
 color.active=color16 on color141      # active/started task: black on Dracula purple (was default orange)
 color.due.today=color215              # orange
 color.due=color228                    # yellow
