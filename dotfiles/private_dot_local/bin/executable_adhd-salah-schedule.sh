@@ -10,11 +10,13 @@ while read -r name t _rest; do
     case "$name" in ''|'#'*) continue ;; esac
     [ -z "${t:-}" ] && continue
     hhmm="${t/:/}"
-    [ "$hhmm" -le "$now" ] 2>/dev/null && continue   # already passed today
+    (( 10#$hhmm <= 10#$now )) && continue   # already passed today — force base-10 so leading-zero HHMM (e.g. 0508) isn't parsed as octal
+    # One-shot for TODAY (dated OnCalendar self-cleans after it elapses) + a date-stamped unit
+    # name, so tomorrow's re-run arms the NEW iqamah time instead of colliding with a frozen unit.
     systemd-run --user --quiet \
-        --on-calendar="*-*-* ${t}:00" \
+        --on-calendar="$(date +%Y-%m-%d) ${t}:00" \
         --timer-property=AccuracySec=30s \
-        --unit="adhd-salah-nudge-${name}" \
+        --unit="adhd-salah-nudge-${name}-$(date +%Y%m%d)" \
         "$HOME/.local/bin/adhd-salah-nudge.sh" "$name" 2>/dev/null || true
 done < "$CONF"
 echo "salah nudges scheduled"
