@@ -168,6 +168,7 @@ hl.bind(mod .. " + SHIFT + A",      hl.dsp.exec_cmd("~/.local/bin/adhd-capture.s
 hl.bind(mod .. " + SHIFT + X",      hl.dsp.exec_cmd("~/.local/bin/adhd-focus.sh status"))
 hl.bind(mod .. " + SHIFT + Return", hl.dsp.exec_cmd("kitty --class tasktui --config ~/.config/kitty/tasktui.conf -e ~/.local/bin/tw-tui"))  -- taskwarrior-tui daily driver (was caelestia focus panel)
 hl.bind(mod .. " + SHIFT + P", hl.dsp.exec_cmd("~/.local/bin/adhd-break.sh"))  -- pause + monitor-off + lock (break)
+hl.bind(mod .. " + SHIFT + semicolon", hl.dsp.exec_cmd("kitty --class salahpick --config ~/.config/kitty/otter.conf -e ~/.local/bin/adhd-salah-pick.sh"))  -- one-key salah logger
 hl.bind(mod .. " + A",              hl.dsp.exec_cmd(cs .. " ipc call leftbar toggle"))  -- summon left "chasing" bar
 hl.bind(mod .. " + D",              hl.dsp.exec_cmd("kitty --config ~/.config/kitty/otter.conf --class otter -e ~/.cargo/bin/otter-launcher"))  -- otter-launcher (floating panel)
 hl.window_rule({ match = { class = "^(otter)$" }, float = true })
@@ -198,6 +199,12 @@ hl.window_rule({ match = { class = "^(tasktui)$" }, float = true })
 hl.window_rule({ match = { class = "^(tasktui)$" }, center = true })
 hl.window_rule({ match = { class = "^(tasktui)$" }, size = "1100 720" })
 hl.window_rule({ match = { class = "^(tasktui)$" }, rounding = 5 })
+
+-- salahpick: floating one-key salah picker
+hl.window_rule({ match = { class = "^(salahpick)$" }, float = true })
+hl.window_rule({ match = { class = "^(salahpick)$" }, center = true })
+hl.window_rule({ match = { class = "^(salahpick)$" }, size = "560 320" })
+hl.window_rule({ match = { class = "^(salahpick)$" }, rounding = 5 })
 
 -- Media keys (locked = work on lockscreen; repeating = hold to repeat)
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("pactl set-sink-volume @DEFAULT_SINK@ +5%"), { repeating = true })
