@@ -60,8 +60,12 @@ def _rows(db, table):
     """Read a table's rows, or [] if it doesn't exist yet (partial days / tests)."""
     return db[table].rows if table in db.table_names() else []
 
-def _afk_spans(db, want_status):
-    return [(_parse(r["start"]), _parse(r["end"])) for r in _rows(db, "_afk_raw") if r["status"] == want_status]
+def _afk_spans(db, want_status, ds):
+    """not-afk/afk spans with the given status that STARTED on logical day `ds` (str).
+    _afk_raw accumulates across every 30-min rollup with no pruning (pk=start), so
+    without this day-scope filter a query on day N+1 would still see day N's rows."""
+    return [(_parse(r["start"]), _parse(r["end"])) for r in _rows(db, "_afk_raw")
+            if r["status"] == want_status and _logday(r["start"]) == ds]
 
 def _iso(compact: str) -> str:  # 20260718T083000Z -> 2026-07-18T08:30:00+00:00
     return datetime.strptime(compact, "%Y%m%dT%H%M%SZ").strftime("%Y-%m-%dT%H:%M:%S+00:00")
@@ -72,13 +76,25 @@ def _logday(ts: str) -> str:  # ISO ts -> its 4am-logical date string
 def _iv_logday(compact_start: str):  # timew UTC compact start -> its 4am-local logical date
     return logical_date(_parse(_iso(compact_start)).astimezone().replace(tzinfo=None))
 
-def rollup_derived(db, day, rules) -> None:
+def _due_logday(due):
+    """A task's `due` (taskwarrior compact-UTC, e.g. '20260718T080000Z') -> its 4am-local
+    logical date, or None if missing/malformed — one bad `due` must not crash the rollup."""
+    if not due:
+        return None
+    try:
+        return _iv_logday(due)
+    except (ValueError, TypeError):
+        return None
+
+def rollup_derived(db, day, rules) -> None:  # rules: unused in part B, kept for signature symmetry with rollup_raw
     ds = str(day)
-    # salah from tasks (project 'salah', due on `day`)
+    # salah from tasks (project 'salah', due on `day`). `due` is taskwarrior's compact-UTC
+    # form ("20260718T080000Z"), so match via the same compact-UTC->4am-local conversion
+    # the intervals use (_iv_logday/_due_logday), NOT a dashed-string .startswith check.
     salah = [{"date": ds, "prayer": t["description"], "status": t.get("salah_status"),
               "due": t.get("due"), "logged_at": t.get("modified")}
              for t in _rows(db, "tasks")
-             if t.get("project") == "salah" and (t.get("due") or "").startswith(ds)]
+             if t.get("project") == "salah" and _due_logday(t.get("due")) == day]
     dbmod.upsert(db, "salah", salah)
     salah_logged = sum(1 for s in salah if s["status"])
 
@@ -101,7 +117,7 @@ def rollup_derived(db, day, rules) -> None:
         "date": ds, "clock_in_logged": clock_in, "salah_logged": salah_logged,
         "breaks_labeled": labeled, "breaks_total": len(day_breaks), "tasks_tracked": len(day_ivs)}])
 
-    notafk, afk = _afk_spans(db, "not-afk"), _afk_spans(db, "afk")
+    notafk, afk = _afk_spans(db, "not-afk", ds), _afk_spans(db, "afk", ds)
     present = [(min(s for s, _ in notafk), max(e for _, e in notafk))] if notafk else []
     dbmod.upsert(db, "reconciliation", [{
         "date": ds,
