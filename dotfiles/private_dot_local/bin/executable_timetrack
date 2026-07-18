@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# timetrack — run the Stage-3 observe rollup/note/sync from its venv.
+exec env PYTHONPATH="$HOME/.local/share/timetrack/lib" \
+    "$HOME/.local/share/timetrack/venv/bin/python" -m timetrack "$@"

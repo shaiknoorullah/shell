@@ -1,0 +1,8 @@
+[Unit]
+Description=timetrack rollup every 30 min (<=30min local freshness)
+[Timer]
+OnCalendar=*:0/30
+OnStartupSec=60
+Persistent=true
+[Install]
+WantedBy=timers.target

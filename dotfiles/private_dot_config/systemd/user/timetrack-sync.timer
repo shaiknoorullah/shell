@@ -1,0 +1,8 @@
+[Unit]
+Description=timetrack hourly backup (<=1h backup freshness)
+[Timer]
+OnCalendar=*:05
+OnStartupSec=120
+Persistent=true
+[Install]
+WantedBy=timers.target
