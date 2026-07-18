@@ -51,3 +51,28 @@ def test_rollup_raw_buckets_by_local_hour_not_utc(tmp_path, monkeypatch, request
                       afk_events=[], logind=[], rules=RULES)
     rows = {(r["category"], r["hour"]): r["seconds"] for r in d["usage"].rows}
     assert rows[("Infra", 19)] == 300
+
+
+def test_usage_recategorization_replaces_not_duplicates(tmp_path):
+    """categories.toml refine-loop: re-running rollup_raw for the same day+event under
+    a DIFFERENT rule set (app moved e.g. Web -> Comms) must REPLACE the usage row, not
+    leave the old-category row orphaned alongside the new one. `usage`'s pk is
+    (date,category,app,hour) — category is part of the key — so a naive upsert can't
+    remove the old row on its own; rollup_raw must delete the day's usage rows first."""
+    d = db.open_db(tmp_path / "t3.db")
+    day = date(2026, 7, 18)
+    window = [_win("2026-07-18T14:05:00+00:00", 300, "kitty", "chat with team")]
+
+    rules_web = [{"category": "Web", "match_app": "kitty"}]
+    rollup.rollup_raw(d, day, tasks=[], intervals_=[], window_events=window,
+                      afk_events=[], logind=[], rules=rules_web)
+    rows = list(d["usage"].rows)
+    assert len(rows) == 1
+    assert rows[0]["category"] == "Web"
+
+    rules_comms = [{"category": "Comms", "match_app": "kitty"}]
+    rollup.rollup_raw(d, day, tasks=[], intervals_=[], window_events=window,
+                      afk_events=[], logind=[], rules=rules_comms)
+    rows = list(d["usage"].rows)
+    assert len(rows) == 1                          # NOT 2 — old "Web" row must be gone
+    assert rows[0]["category"] == "Comms"

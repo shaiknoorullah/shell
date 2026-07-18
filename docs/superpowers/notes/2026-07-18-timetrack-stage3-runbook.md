@@ -64,8 +64,13 @@ timetrack all      # rollup -> note -> sync, in that order (what the timers effe
 ```
 `rollup`/`note`/`sync` are each idempotent — safe to run out-of-band by hand
 (e.g. right after installing aw-watcher-web, or after editing
-`categories.toml`) without double-counting anything; every table upserts on
-its stable key (`db.PKS`).
+`categories.toml`). Every table upserts on its stable key (`db.PKS`), EXCEPT
+`usage`/`web`: `rollup_raw`/`rollup_web` each delete the day's existing
+`usage`/`web` rows before inserting the freshly-aggregated ones (replace-the-
+day), because `usage`'s pk (`date,category,app,hour`) includes `category` —
+an upsert alone can't remove the old-category row when an app is
+re-categorized, so re-running rollup after editing `categories.toml` cleanly
+recategorizes with no orphaned/double-counted rows.
 
 ## The `web` bucket (aw-watcher-web wiring)
 `rollup_web(db, day, web_events, rules)` is wired into `__main__._do_rollup`
@@ -89,8 +94,11 @@ The loop:
 3. Add/adjust a `[[rule]]` in `~/.config/timetrack/categories.toml` (ordered —
    put more specific rules before broader catch-alls, since first match
    wins).
-4. Re-run `timetrack rollup` (safe — upserts recompute `usage`/`web`/derived
-   tables for the day from the raw AW events already read; no double count).
+4. Re-run `timetrack rollup` (safe — `rollup_raw`/`rollup_web` REPLACE the
+   day's `usage`/`web` rows outright — delete-then-insert — before
+   `rollup_derived` recomputes `daily_summary`/etc. from them, so an app that
+   moved categories doesn't leave an orphaned old-category row behind; no
+   double count).
 5. `chezmoi add ~/.config/timetrack/categories.toml`, commit — the rule file
    is versioned like code.
 

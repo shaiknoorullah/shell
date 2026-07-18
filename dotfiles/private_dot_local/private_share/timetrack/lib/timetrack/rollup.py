@@ -32,6 +32,15 @@ def rollup_raw(db, day: date, tasks, intervals_, window_events, afk_events, logi
         cat = categorize.categorize(d.get("app", ""), d.get("title", ""), rules=rules)
         hour = _parse(ev["timestamp"]).astimezone().hour
         agg[(str(day), cat, d.get("app", ""), hour)] += ev.get("duration", 0)
+    # Replace the day's usage rows before inserting the freshly-aggregated ones.
+    # `category` is part of usage's pk (date,category,app,hour), so an app that moves
+    # categories (user edits categories.toml, e.g. Web -> Comms) would otherwise get a
+    # NEW row under the new category while the OLD (date,"Web",app,hour) row is
+    # orphaned — never deleted, and rollup_derived's cat_seconds then sums BOTH,
+    # inflating daily_summary/note totals. The CLI always rolls up the complete
+    # 4am->4am day, so replace-the-day is correct and idempotent.
+    if "usage" in db.table_names():
+        db["usage"].delete_where("date = ?", [str(day)])
     dbmod.upsert(db, "usage", [
         {"date": k[0], "category": k[1], "app": k[2], "hour": k[3], "seconds": round(v)}
         for k, v in agg.items()
@@ -69,6 +78,12 @@ def rollup_web(db, day: date, web_events, rules) -> None:
         key = (str(day), host, hour)
         agg[key] += ev.get("duration", 0)
         cats[key] = categorize.categorize(app="", title="", domain=host, rules=rules)
+    # Replace the day's web rows before inserting the fresh ones — same replace-the-day
+    # approach as rollup_raw's usage aggregation above. web keys on domain (not
+    # category) so upsert alone wouldn't orphan rows here, but doing the delete keeps
+    # both paths consistent and the dump deterministic even when a source shrinks.
+    if "web" in db.table_names():
+        db["web"].delete_where("date = ?", [str(day)])
     dbmod.upsert(db, "web", [
         {"date": k[0], "domain": k[1], "hour": k[2], "seconds": round(v), "category": cats[k]}
         for k, v in agg.items()
