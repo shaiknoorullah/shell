@@ -25,6 +25,9 @@ def _do_rollup():
 def main(argv=None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     cmd = argv[0] if argv else "all"
+    if cmd not in ("rollup", "note", "sync", "all"):
+        print("usage: timetrack rollup|note|sync|all", file=sys.stderr)
+        return 2
     if cmd in ("rollup", "all"):
         d, day = _do_rollup()
     if cmd in ("note", "all"):
