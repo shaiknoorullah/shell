@@ -22,11 +22,11 @@ def render(db, day: date) -> str:
     top = max(cats.values()) if cats else 0
     n = streak(db, day)
     where = "  ".join(f"{c} {_hm(s)} {_bars(s, top)}" for c, s in sorted(cats.items(), key=lambda kv:-kv[1]))
-    tick = "".join("✅" if salah.get(p) and salah[p] != "missed" else ("◻" if salah.get(p) == "missed" else "▫") for p in PRAYERS)
+    tick = "".join("✅" if salah.get(p) and salah[p] != "missed" else ("◻" if salah.get(p) == "missed" else "·") for p in PRAYERS)
     lines = [
         "---", f"date: {ds}", f"tracked_seconds: {summ.get('tracked_seconds',0)}",
         f"salah_logged: {adh.get('salah_logged',0)}", f"streak: {n}",
-        f"counts: {bool(adh.get('clock_in_logged') and adh.get('salah_logged')==5 and adh.get('tasks_tracked',0)>=1)}",
+        f"counts: {str(bool(adh.get('clock_in_logged') and adh.get('salah_logged')==5 and adh.get('tasks_tracked',0)>=1)).lower()}",
         "---", "",
         f"## ⏱ {ds}   ·   🔥 {n}-day streak", "",
         f"Tracked  {_hm(summ.get('tracked_seconds',0))}",
@@ -42,5 +42,5 @@ def render(db, day: date) -> str:
 def write(db, day: date):
     config.VAULT_DAILY.mkdir(parents=True, exist_ok=True)
     p = config.VAULT_DAILY / f"{day}.md"
-    p.write_text(render(db, day))
+    p.write_text(render(db, day), encoding="utf-8")
     return p

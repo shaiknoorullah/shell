@@ -16,3 +16,4 @@ def test_render_has_frontmatter_streak_and_salah(tmp_path):
     assert "streak" in md.lower()
     assert "Infra" in md and "Salah" in md
     assert "35m" in md                        # optional-review line
+    assert "counts: true" in md               # YAML lowercase boolean for Dataview
