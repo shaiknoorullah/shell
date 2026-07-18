@@ -167,6 +167,39 @@ def test_habit_sprint_start_set_shows_day_count_in_header(tmp_path, monkeypatch)
     header_line = next(l for l in md.splitlines() if l.startswith("## "))
     assert "day 6 of 14" in header_line          # (2026-07-18 - 2026-07-13).days + 1 == 6
 
+def test_body_wrapped_in_pre_preserves_alignment_for_reading_view(tmp_path):
+    d = db.open_db(tmp_path / "t.db")
+    day = date(2026, 7, 18)
+    ds = str(day)
+    d["daily_summary"].upsert_all([{"date": ds, "categories": {"Infra": 12000},
+        "tracked_seconds": 12000, "breaks": 0, "salah_logged": 0}], pk="date")
+    d["adherence"].upsert_all([{"date": ds, "clock_in_logged": 1, "salah_logged": 0,
+        "breaks_labeled": 0, "breaks_total": 0, "tasks_tracked": 1, "coverage_pct": 50}], pk="date")
+    md = note.render(d, day)
+    assert "<pre>" in md and "</pre>" in md
+    # H2 heading stays OUTSIDE the pre (renders as a real title); the aligned body is INSIDE
+    assert md.index("## ⏱") < md.index("<pre>") < md.index("Where    Infra") < md.index("</pre>")
+    # multi-space column alignment is preserved verbatim inside the pre (Reading view won't collapse it)
+    pre_body = md[md.index("<pre>"):md.index("</pre>")]
+    assert "Where    Infra" in pre_body        # 4-space alignment intact
+    assert "Clocked  " in pre_body              # 2-space alignment intact
+
+def test_pre_escapes_html_special_chars_in_task_names(tmp_path):
+    d = db.open_db(tmp_path / "t.db")
+    day = date(2026, 7, 18)
+    ds = str(day)
+    d["daily_summary"].upsert_all([{"date": ds, "categories": {}, "tracked_seconds": 0,
+        "breaks": 0, "salah_logged": 0}], pk="date")
+    d["adherence"].upsert_all([{"date": ds, "clock_in_logged": 0, "salah_logged": 0,
+        "breaks_labeled": 0, "breaks_total": 0, "tasks_tracked": 1}], pk="date")
+    d["intervals"].upsert_all([
+        {"start": "20260718T083000Z", "end": "20260718T100000Z", "tags": ["work"],
+         "project": "work", "description": "fix a<b & c"},
+    ], pk="start")
+    md = note.render(d, day)
+    assert "fix a&lt;b &amp; c" in md          # &<> escaped so they can't break the <pre> block
+    assert "fix a<b & c" not in md
+
 def test_habit_sprint_start_future_date_clamps_to_day_1(tmp_path, monkeypatch):
     from timetrack import config
     monkeypatch.setattr(config, "HABIT_SPRINT_START", date(2026, 7, 20))

@@ -1,5 +1,6 @@
 """Render + write the Obsidian daily note (never-guilt, scannable)."""
 import json
+import html
 from collections import defaultdict
 from datetime import date, timedelta
 from . import config
@@ -96,32 +97,39 @@ def render(db, day: date) -> str:
         x = max(1, (day - config.HABIT_SPRINT_START).days + 1)
         header += f"   ·   day {x} of 14"
 
-    lines = [
+    # frontmatter (Dataview properties) + the H2 heading stay as markdown — rendered as a real title.
+    front = [
         "---", f"date: {ds}", f"tracked_seconds: {tracked_seconds}",
         f"salah_logged: {adh.get('salah_logged',0)}", f"streak: {n}",
         f"counts: {str(day_counts(adh)).lower()}",
     ]
     if coverage_pct is not None:
-        lines.append(f"coverage_pct: {coverage_pct}")
-    lines += ["---", "", header, "",
+        front.append(f"coverage_pct: {coverage_pct}")
+    front += ["---", "", header]
+
+    # The body's aligned columns rely on monospace + preserved spaces, which Obsidian's Reading
+    # view would otherwise collapse (proportional font). Wrap it in <pre> so it stays aligned in
+    # every mode. Escape &<> so a task/domain containing them can't break the block.
+    body = [
         _clocked_line(adh, tracked_seconds, coverage_pct),
         f"Where    {where}",
     ]
     web_line = _web_line(db, ds)
     if web_line:
-        lines.append(web_line)
-    lines.append(_breaks_line(db, ds))
-    lines.append(_salah_line(salah, adh))
+        body.append(web_line)
+    body.append(_breaks_line(db, ds))
+    body.append(_salah_line(salah, adh))
     top_line = _top_tasks_line(db, day)
     if top_line:
-        lines.append(top_line)
+        body.append(top_line)
 
     au = rec.get("active_untracked_min", 0)
     if au:
-        lines += ["", f"Review (optional)  ~{au}m active with no task"]
-    lines += ["", _habit_bar(db, day)]
+        body += ["", f"Review (optional)  ~{au}m active with no task"]
+    body += ["", _habit_bar(db, day)]
 
-    return "\n".join(lines) + "\n"
+    pre = "<pre>\n" + html.escape("\n".join(body), quote=False) + "\n</pre>"
+    return "\n".join(front) + "\n\n" + pre + "\n"
 
 def write(db, day: date):
     config.VAULT_DAILY.mkdir(parents=True, exist_ok=True)
