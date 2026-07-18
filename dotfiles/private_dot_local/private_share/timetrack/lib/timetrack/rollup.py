@@ -50,3 +50,71 @@ def rollup_raw(db, day: date, tasks, intervals_, window_events, afk_events, logi
                 for ev in afk_events if ev.get("timestamp")]
     if afk_rows:
         db["_afk_raw"].upsert_all(afk_rows, pk="start")
+
+# --- part B: derived (salah, reconciliation, daily_summary, adherence, streak) ---
+from . import intervals as I
+
+PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"]
+
+def _rows(db, table):
+    """Read a table's rows, or [] if it doesn't exist yet (partial days / tests)."""
+    return db[table].rows if table in db.table_names() else []
+
+def _afk_spans(db, want_status):
+    return [(_parse(r["start"]), _parse(r["end"])) for r in _rows(db, "_afk_raw") if r["status"] == want_status]
+
+def _iso(compact: str) -> str:  # 20260718T083000Z -> 2026-07-18T08:30:00+00:00
+    return datetime.strptime(compact, "%Y%m%dT%H%M%SZ").strftime("%Y-%m-%dT%H:%M:%S+00:00")
+
+def _logday(ts: str) -> str:  # ISO ts -> its 4am-logical date string
+    return str(logical_date(_parse(ts).astimezone().replace(tzinfo=None)))
+
+def _iv_logday(compact_start: str):  # timew UTC compact start -> its 4am-local logical date
+    return logical_date(_parse(_iso(compact_start)).astimezone().replace(tzinfo=None))
+
+def rollup_derived(db, day, rules) -> None:
+    ds = str(day)
+    # salah from tasks (project 'salah', due on `day`)
+    salah = [{"date": ds, "prayer": t["description"], "status": t.get("salah_status"),
+              "due": t.get("due"), "logged_at": t.get("modified")}
+             for t in _rows(db, "tasks")
+             if t.get("project") == "salah" and (t.get("due") or "").startswith(ds)]
+    dbmod.upsert(db, "salah", salah)
+    salah_logged = sum(1 for s in salah if s["status"])
+
+    # intervals belonging to THIS logical day (convert UTC start -> local -> 4am boundary)
+    day_ivs = [iv for iv in _rows(db, "intervals") if iv.get("start") and _iv_logday(iv["start"]) == day]
+    ivspans = [(_parse(_iso(iv["start"])), _parse(_iso(iv["end"]))) for iv in day_ivs if iv.get("end")]
+
+    cat_seconds = {}
+    for u in _rows(db, "usage"):
+        if u["date"] == ds:
+            cat_seconds[u["category"]] = cat_seconds.get(u["category"], 0) + u["seconds"]
+    clock_in = 1 if any(s.get("type") == "login" and _logday(s["ts"]) == ds for s in _rows(db, "sessions")) else 0
+    day_breaks = [b for b in _rows(db, "breaks") if _logday(b["start"]) == ds]
+    labeled = sum(1 for b in day_breaks if b.get("label"))
+
+    dbmod.upsert(db, "daily_summary", [{
+        "date": ds, "categories": cat_seconds, "tracked_seconds": sum(cat_seconds.values()),
+        "breaks": len(day_breaks), "salah_logged": salah_logged}])
+    dbmod.upsert(db, "adherence", [{
+        "date": ds, "clock_in_logged": clock_in, "salah_logged": salah_logged,
+        "breaks_labeled": labeled, "breaks_total": len(day_breaks), "tasks_tracked": len(day_ivs)}])
+
+    notafk, afk = _afk_spans(db, "not-afk"), _afk_spans(db, "afk")
+    present = [(min(s for s, _ in notafk), max(e for _, e in notafk))] if notafk else []
+    dbmod.upsert(db, "reconciliation", [{
+        "date": ds,
+        "active_untracked_min": round(sum((e - s).total_seconds() for s, e in I.subtract(notafk, ivspans)) / 60),
+        "task_afk_min": round(I.overlap(ivspans, afk) / 60),
+        "present_idle_min": round(I.overlap(present, afk) / 60)}])
+
+def streak(db, day) -> int:
+    rows = {r["date"]: r for r in _rows(db, "adherence")}
+    n, cur = 0, day
+    while True:
+        r = rows.get(str(cur))
+        if r and r["clock_in_logged"] and r["salah_logged"] == 5 and r["tasks_tracked"] >= 1:
+            n += 1; cur = cur - timedelta(days=1)
+        else:
+            return n
