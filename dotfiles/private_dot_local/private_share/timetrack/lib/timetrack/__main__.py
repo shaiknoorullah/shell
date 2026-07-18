@@ -9,6 +9,14 @@ def _today_window():
     start = datetime.combine(day, time(config.DAY_BOUNDARY_HOUR))
     return day, start, start + timedelta(days=1)
 
+def _web_bucket():
+    """Resolve the aw-watcher-web bucket: config.WEB_BUCKET if set, else auto-detect
+    via sources.list_aw_buckets() (first bucket whose name contains "web"); None if
+    neither — the web rollup stays inert until the extension is installed."""
+    if config.WEB_BUCKET:
+        return config.WEB_BUCKET
+    return next((b for b in sources.list_aw_buckets() if "web" in b.lower()), None)
+
 def _do_rollup():
     day, start, end = _today_window()
     d = dbmod.open_db()
@@ -19,6 +27,9 @@ def _do_rollup():
         window_events=sources.read_aw_events(sources.WINDOW_BUCKET, si, ei),
         afk_events=sources.read_aw_events(sources.AFK_BUCKET, si, ei),
         logind=sources.read_logind(), rules=rules)
+    web_bucket = _web_bucket()
+    if web_bucket:
+        rollup.rollup_web(d, day, sources.read_aw_events(web_bucket, si, ei), rules)
     rollup.rollup_derived(d, day, rules)
     return d, day
 

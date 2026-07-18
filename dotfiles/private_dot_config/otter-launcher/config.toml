@@ -136,3 +136,9 @@ description = "  tasks"
 prefix = "tw"
 cmd = "kitty --class tasktui --config /home/devsupreme/.config/kitty/tasktui.conf -e /home/devsupreme/.local/bin/tw-tui"
 unbind_proc = true
+
+[[modules]]
+description = "observe: datasette over timetrack.db"
+prefix = "tt"
+cmd = "kitty --class datasette --config /home/devsupreme/.config/kitty/otter.conf -e /home/devsupreme/.local/bin/timetrack-datasette"
+unbind_proc = true

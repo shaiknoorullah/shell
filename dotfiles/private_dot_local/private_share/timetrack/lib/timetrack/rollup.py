@@ -1,6 +1,7 @@
 """Rollup: read sources into the DB for one 4am-logical day (part A: raw + aggregation)."""
 from collections import defaultdict
 from datetime import datetime, date, timedelta
+from urllib.parse import urlparse
 from . import db as dbmod, categorize
 from .config import logical_date
 
@@ -50,6 +51,28 @@ def rollup_raw(db, day: date, tasks, intervals_, window_events, afk_events, logi
                 for ev in afk_events if ev.get("timestamp")]
     if afk_rows:
         db["_afk_raw"].upsert_all(afk_rows, pk="start")
+
+def rollup_web(db, day: date, web_events, rules) -> None:
+    """Aggregate aw-watcher-web events into (date, domain, hour) -> seconds, upserting `web`.
+    Inert (no-op) when web_events is empty — callers guard this on a web bucket existing."""
+    agg = defaultdict(float)
+    cats = {}
+    for ev in web_events:
+        d = ev.get("data", {})
+        url = d.get("url")
+        if not url:
+            continue                                       # guard missing/None url
+        host = urlparse(url).hostname
+        if not host:
+            continue                                        # unparseable url -> no domain
+        hour = _parse(ev["timestamp"]).astimezone().hour
+        key = (str(day), host, hour)
+        agg[key] += ev.get("duration", 0)
+        cats[key] = categorize.categorize(app="", title="", domain=host, rules=rules)
+    dbmod.upsert(db, "web", [
+        {"date": k[0], "domain": k[1], "hour": k[2], "seconds": round(v), "category": cats[k]}
+        for k, v in agg.items()
+    ])
 
 # --- part B: derived (salah, reconciliation, daily_summary, adherence, streak) ---
 from . import intervals as I

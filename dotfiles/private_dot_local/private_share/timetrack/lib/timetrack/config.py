@@ -15,6 +15,8 @@ DATA_REPO = HOME / ".local/share/timetrack/data-repo"      # private git clone; 
 VAULT_DAILY = HOME / "powerhouse/timetrack/daily"          # PERSONAL vault only
 CATEGORIES_TOML = HOME / ".config/timetrack/categories.toml"
 
+WEB_BUCKET = None          # aw-watcher-web bucket id (e.g. "aw-watcher-web-brave"); None = auto-detect/skip
+
 DAY_BOUNDARY_HOUR = 4
 
 def logical_date(dt: datetime) -> date:

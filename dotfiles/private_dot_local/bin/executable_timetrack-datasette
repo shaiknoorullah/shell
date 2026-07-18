@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# timetrack-datasette — on-demand Datasette browser over the timetrack observe DB.
+exec "$HOME/.local/share/timetrack/venv/bin/datasette" serve "$HOME/.local/share/timetrack/timetrack.db" --open
