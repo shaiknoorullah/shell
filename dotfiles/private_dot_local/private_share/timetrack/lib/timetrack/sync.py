@@ -12,7 +12,7 @@ def dump(db_path, out_dir) -> None:
             continue
         pk = dbmod.PKS.get(table)
         cols = [c.name for c in d[table].columns]
-        key = (lambda r: tuple(r.get(k) for k in ([pk] if isinstance(pk, str) else pk))) if pk else (lambda r: r)
+        key = (lambda r: tuple(r.get(k) for k in ([pk] if isinstance(pk, str) else pk))) if pk else (lambda r: tuple(r.get(c) for c in cols))
         rows = sorted(d[table].rows, key=key)
         (out / f"{table}.metadata.json").write_text(json.dumps({"name": table, "columns": cols}, indent=2, sort_keys=True) + "\n")
         with (out / f"{table}.ndjson").open("w") as f:
@@ -28,7 +28,7 @@ def push(repo=None, db_path=None) -> bool:
         return False                       # repo not set up yet — non-fatal
     _git(repo, "pull", "--quiet", "--no-rebase")      # single-writer: pull before write
     dump(db_path, repo / "tables")
-    _git(repo, "add", "-A")
+    _git(repo, "add", "tables")
     if not _git(repo, "diff", "--cached", "--quiet").returncode:
         return True                        # nothing changed
     _git(repo, "commit", "--quiet", "-m", "rollup: refresh observe data")
