@@ -17,6 +17,8 @@ CATEGORIES_TOML = HOME / ".config/timetrack/categories.toml"
 
 WEB_BUCKET = None          # aw-watcher-web bucket id (e.g. "aw-watcher-web-brave"); None = auto-detect/skip
 
+HABIT_SPRINT_START = None  # date | None — set to start the "day X of 14" graduation countdown in the note header
+
 DAY_BOUNDARY_HOUR = 4
 
 def logical_date(dt: datetime) -> date:

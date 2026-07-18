@@ -71,6 +71,65 @@ def test_afk_spans_day_scoped_excludes_prior_day(tmp_path):
     # if the prior-day span leaked in, this would be 180 (120+60); day-scoped it's 60
     assert rec["active_untracked_min"] == 60
 
+def test_coverage_pct_computed_from_intervals_and_active_untracked(tmp_path):
+    """coverage = 100 * interval_seconds / (interval_seconds + active_untracked_seconds).
+    One tracked hour (3600s) + 30min (1800s) of not-afk-but-untracked time, non-overlapping
+    -> 3600/(3600+1800) = 66.67% -> rounds to 67."""
+    d = db.open_db(tmp_path / "t.db")
+    day = date(2026, 7, 18)
+    d["intervals"].upsert_all([{"start": "20260718T100000Z", "end": "20260718T110000Z",
+        "tags": ["work", "x"], "project": "work", "description": "x"}], pk="start")
+    d["_afk_raw"].insert_all([
+        {"start": "2026-07-18T09:00:00+00:00", "end": "2026-07-18T09:30:00+00:00", "status": "not-afk"},
+    ], pk="start")
+    rollup.rollup_derived(d, day, rules=[])
+    adh = list(d["adherence"].rows)[0]
+    assert adh["coverage_pct"] == 67
+
+def test_coverage_pct_none_when_denominator_zero(tmp_path):
+    """No intervals and no active-untracked time on the day -> the fraction is 0/0;
+    coverage_pct must be None (not a crash, not a misleading 0%) so the note omits it."""
+    d = db.open_db(tmp_path / "t.db")
+    day = date(2026, 7, 18)
+    rollup.rollup_derived(d, day, rules=[])
+    adh = list(d["adherence"].rows)[0]
+    assert adh["coverage_pct"] is None
+
+def test_clock_in_and_clock_out_from_sessions(tmp_path):
+    """clock_in = earliest login/unlock event's local HH:MM; clock_out = latest
+    logout/lock event's local HH:MM. Under the conftest TZ=UTC pin, 'local' == UTC."""
+    d = db.open_db(tmp_path / "t.db")
+    day = date(2026, 7, 18)
+    d["sessions"].upsert_all([
+        {"ts": "2026-07-18T07:12:00+00:00", "type": "login", "detail": None},
+        {"ts": "2026-07-18T12:00:00+00:00", "type": "lock", "detail": None},
+        {"ts": "2026-07-18T12:30:00+00:00", "type": "unlock", "detail": None},
+        {"ts": "2026-07-18T21:40:00+00:00", "type": "logout", "detail": None},
+    ], pk="ts")
+    rollup.rollup_derived(d, day, rules=[])
+    adh = list(d["adherence"].rows)[0]
+    assert adh["clock_in"] == "07:12"
+    assert adh["clock_out"] == "21:40"
+
+def test_clock_in_only_leaves_clock_out_none(tmp_path):
+    d = db.open_db(tmp_path / "t.db")
+    day = date(2026, 7, 18)
+    d["sessions"].upsert_all([
+        {"ts": "2026-07-18T07:12:00+00:00", "type": "login", "detail": None},
+    ], pk="ts")
+    rollup.rollup_derived(d, day, rules=[])
+    adh = list(d["adherence"].rows)[0]
+    assert adh["clock_in"] == "07:12"
+    assert adh["clock_out"] is None
+
+def test_no_sessions_clock_in_and_out_both_none(tmp_path):
+    d = db.open_db(tmp_path / "t.db")
+    day = date(2026, 7, 18)
+    rollup.rollup_derived(d, day, rules=[])
+    adh = list(d["adherence"].rows)[0]
+    assert adh["clock_in"] is None
+    assert adh["clock_out"] is None
+
 def test_salah_due_conversion_across_non_utc_local_boundary(tmp_path, monkeypatch, request):
     """Every other derived test runs under the conftest TZ=UTC pin with UTC-offset
     inputs, so `.astimezone()` in _due_logday/_iv_logday is a no-op and the real

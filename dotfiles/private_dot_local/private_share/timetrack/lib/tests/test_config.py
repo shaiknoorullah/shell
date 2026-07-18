@@ -1,4 +1,5 @@
 from datetime import datetime, date
+from timetrack import config
 from timetrack.config import logical_date
 
 def test_before_4am_belongs_to_previous_day():
@@ -7,3 +8,8 @@ def test_before_4am_belongs_to_previous_day():
 def test_at_or_after_4am_is_same_day():
     assert logical_date(datetime(2026, 7, 18, 4, 0)) == date(2026, 7, 18)
     assert logical_date(datetime(2026, 7, 18, 23, 30)) == date(2026, 7, 18)
+
+def test_habit_sprint_start_defaults_to_none():
+    """No sprint declared yet -> the note header must not crash trying to compute
+    'day X of 14'; note.render() gates on this being None."""
+    assert config.HABIT_SPRINT_START is None

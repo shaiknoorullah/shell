@@ -124,6 +124,12 @@ def _due_logday(due):
     except (ValueError, TypeError):
         return None
 
+def day_counts(row) -> bool:
+    """A day 'counts' for streak/habit purposes: clocked in, all 5 salah logged
+    (missed/qaza still counts — honesty logs the day), and >=1 task tracked."""
+    return bool(row and row.get("clock_in_logged") and row.get("salah_logged") == 5
+                and row.get("tasks_tracked", 0) >= 1)
+
 def rollup_derived(db, day, rules) -> None:  # rules: unused in part B, kept for signature symmetry with rollup_raw
     ds = str(day)
     # salah from tasks (project 'salah', due on `day`). `due` is taskwarrior's compact-UTC
@@ -139,27 +145,44 @@ def rollup_derived(db, day, rules) -> None:  # rules: unused in part B, kept for
     # intervals belonging to THIS logical day (convert UTC start -> local -> 4am boundary)
     day_ivs = [iv for iv in _rows(db, "intervals") if iv.get("start") and _iv_logday(iv["start"]) == day]
     ivspans = [(_parse(_iso(iv["start"])), _parse(_iso(iv["end"]))) for iv in day_ivs if iv.get("end")]
+    interval_seconds = sum((e - s).total_seconds() for s, e in ivspans)
 
     cat_seconds = {}
     for u in _rows(db, "usage"):
         if u["date"] == ds:
             cat_seconds[u["category"]] = cat_seconds.get(u["category"], 0) + u["seconds"]
-    clock_in = 1 if any(s.get("type") == "login" and _logday(s["ts"]) == ds for s in _rows(db, "sessions")) else 0
+
+    day_sessions = [s for s in _rows(db, "sessions") if s.get("ts") and _logday(s["ts"]) == ds]
+    clock_in = 1 if any(s.get("type") == "login" for s in day_sessions) else 0
+    in_events = sorted((s for s in day_sessions if s.get("type") in ("login", "unlock")),
+                        key=lambda s: _parse(s["ts"]))
+    out_events = sorted((s for s in day_sessions if s.get("type") in ("logout", "lock")),
+                         key=lambda s: _parse(s["ts"]))
+    clock_in_time = _parse(in_events[0]["ts"]).astimezone().strftime("%H:%M") if in_events else None
+    clock_out_time = _parse(out_events[-1]["ts"]).astimezone().strftime("%H:%M") if out_events else None
+
     day_breaks = [b for b in _rows(db, "breaks") if _logday(b["start"]) == ds]
     labeled = sum(1 for b in day_breaks if b.get("label"))
+
+    # notafk/afk spans computed here (ahead of the adherence upsert below) because
+    # coverage_pct needs active_untracked_seconds, which reconciliation also needs.
+    notafk, afk = _afk_spans(db, "not-afk", ds), _afk_spans(db, "afk", ds)
+    active_untracked_min = round(sum((e - s).total_seconds() for s, e in I.subtract(notafk, ivspans)) / 60)
+    denom = interval_seconds + (active_untracked_min * 60)
+    coverage_pct = round(100 * interval_seconds / denom) if denom else None
 
     dbmod.upsert(db, "daily_summary", [{
         "date": ds, "categories": cat_seconds, "tracked_seconds": sum(cat_seconds.values()),
         "breaks": len(day_breaks), "salah_logged": salah_logged}])
     dbmod.upsert(db, "adherence", [{
         "date": ds, "clock_in_logged": clock_in, "salah_logged": salah_logged,
-        "breaks_labeled": labeled, "breaks_total": len(day_breaks), "tasks_tracked": len(day_ivs)}])
+        "breaks_labeled": labeled, "breaks_total": len(day_breaks), "tasks_tracked": len(day_ivs),
+        "coverage_pct": coverage_pct, "clock_in": clock_in_time, "clock_out": clock_out_time}])
 
-    notafk, afk = _afk_spans(db, "not-afk", ds), _afk_spans(db, "afk", ds)
     present = [(min(s for s, _ in notafk), max(e for _, e in notafk))] if notafk else []
     dbmod.upsert(db, "reconciliation", [{
         "date": ds,
-        "active_untracked_min": round(sum((e - s).total_seconds() for s, e in I.subtract(notafk, ivspans)) / 60),
+        "active_untracked_min": active_untracked_min,
         "task_afk_min": round(I.overlap(ivspans, afk) / 60),
         "present_idle_min": round(I.overlap(present, afk) / 60)}])
 
@@ -167,8 +190,7 @@ def streak(db, day) -> int:
     rows = {r["date"]: r for r in _rows(db, "adherence")}
     n, cur = 0, day
     while True:
-        r = rows.get(str(cur))
-        if r and r["clock_in_logged"] and r["salah_logged"] == 5 and r["tasks_tracked"] >= 1:
+        if day_counts(rows.get(str(cur))):
             n += 1; cur = cur - timedelta(days=1)
         else:
             return n
