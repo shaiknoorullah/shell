@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - **Scope = Stage 3 (Observe) only.** Do NOT touch Stage-1 capture services (`aw-server`, `awatcher`, `timetrack-logind`) or Stage-2 (taskwarrior-tui, salah, break hotkey). The rollup is READ-ONLY against all sources.
-- **taskwarrior binary = linuxbrew 3.4.2** (`/home/linuxbrew/.linuxbrew/bin/task`); timew = `/home/linuxbrew/.linuxbrew/bin/timew`. NEVER `/usr/bin/task` (2.6.2, retired) or `~/.local/bin/task` (that is go-task, NOT taskwarrior). Read tasks via `task export` (JSON, key `uuid`; `salah_status` present only when set).
+- **taskwarrior binary = linuxbrew 3.4.2** (`/home/linuxbrew/.linuxbrew/bin/task`); timew = `/usr/bin/timew` (v1.7.1 — NOT brew-installed; corrected in Task 1). NEVER `/usr/bin/task` (2.6.2, retired) or `~/.local/bin/task` (that is go-task, NOT taskwarrior). Read tasks via `task export` (JSON, key `uuid`; `salah_status` present only when set).
 - **timew interval tags = `[project, description]`** (from the `on-modify.timewarrior` hook). No uuid — join intervals→tasks best-effort by `(description, project)`; categorize intervals directly from these tags.
 - **One SQLite file** `~/.local/share/timetrack/timetrack.db` (local, NOT committed as binary). Git backup = a **`sqlite-diffable` stable-sorted text dump** committed hourly to a NEW PRIVATE personal-account repo (never the public `shaiknoorullah/shell` fork, never work/cluster infra). Single-writer: pull-before-write.
 - **4am day boundary**: `logical_date(dt) = (dt - 4h).date()`. Timers use `Persistent=true`.
