@@ -1,3 +1,4 @@
+import os
 from datetime import date
 from timetrack import db, rollup
 
@@ -22,3 +23,31 @@ def test_rollup_raw_aggregates_usage_and_breaks(tmp_path):
     assert d["breaks"].count == 1
     assert list(d["breaks"].rows)[0]["source"] == "auto"
     assert d["_afk_raw"].count == 1        # afk span persisted for part-B reconciliation
+
+
+def test_rollup_raw_buckets_by_local_hour_not_utc(tmp_path, monkeypatch, request):
+    """Proves `_parse(...).astimezone().hour` actually converts UTC → local wall-clock
+    hour. conftest pins TZ=UTC for the rest of the suite (where `.astimezone()` is a
+    no-op), which can't distinguish "converts to local hour" from "uses raw UTC hour" —
+    a regression deleting `.astimezone()` would still pass every other test here. This
+    test overrides the process timezone to a non-zero offset (Asia/Kolkata, +05:30) for
+    just this test, so a stripped `.astimezone()` fails it."""
+    import time
+
+    monkeypatch.setenv("TZ", "Asia/Kolkata")
+    time.tzset()
+
+    def _restore_utc():
+        os.environ["TZ"] = "UTC"
+        time.tzset()
+
+    request.addfinalizer(_restore_utc)
+
+    d = db.open_db(tmp_path / "t2.db")
+    day = date(2026, 7, 18)
+    # 2026-07-18T14:05:00+00:00 == 2026-07-18 19:35 IST (+05:30) — must land in hour 19.
+    window = [_win("2026-07-18T14:05:00+00:00", 300, "kitty", "cluster deploy")]
+    rollup.rollup_raw(d, day, tasks=[], intervals_=[], window_events=window,
+                      afk_events=[], logind=[], rules=RULES)
+    rows = {(r["category"], r["hour"]): r["seconds"] for r in d["usage"].rows}
+    assert rows[("Infra", 19)] == 300

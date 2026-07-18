@@ -12,7 +12,7 @@ def merge(spans):
 
 def overlap(a, b):
     a, b = merge(a), merge(b)
-    total, j = 0.0, 0
+    total = 0.0
     for s, e in a:
         for bs, be in b:
             lo, hi = max(s, bs), min(e, be)
