@@ -115,7 +115,9 @@ hl.layer_rule({ match = { namespace = "rofi" },       blur = true, ignore_alpha 
 
 -- ── Autostart ──────────────────────────────────────────────────────────
 hl.on("hyprland.start", function()
-  hl.exec_cmd("~/.nix-profile/bin/caelestia-shell")           -- caelestia shell (Nix, nixGL-wrapped); owns wallpaper + notifications
+  hl.exec_cmd("waybar")
+  hl.exec_cmd("mako")
+  hl.exec_cmd("swayosd-server")
   hl.exec_cmd("~/.local/bin/wallpaper --restore")
   hl.exec_cmd("/home/devsupreme/.local/bin/clipse -listen")   -- clipboard-history daemon for the clipse TUI             -- swww daemon + restore last wallpaper (migrating off caelestia's wallpaper)
   hl.exec_cmd("systemctl --user start awatcher.service")     -- ActivityWatch window+AFK watcher (needs Wayland env)
@@ -145,7 +147,8 @@ hl.bind(mod .. " + SHIFT + F", hl.dsp.exec_cmd("kitty --config ~/.config/kitty/o
 hl.bind(mod .. " + C",         hl.dsp.exec_cmd("kitty --class clipse --config ~/.config/kitty/otter.conf -e /home/devsupreme/.local/bin/clipse"))  -- caelestia clipboard (was rofi-clipboard.sh)
 hl.bind(mod .. " + SHIFT + B", hl.dsp.exec_cmd("kitty --class bluetuith --config ~/.config/kitty/bluetuith.conf -e bluetuith"))  -- bluetuith panel (was rofi-bluetooth.sh)
 hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("kitty --class wallpaper --config ~/.config/kitty/otter.conf -e ~/.local/bin/wallpaper"))  -- wallpaper picker (otter-styled fzf + swww, no caelestia)
-hl.bind("Print",               hl.dsp.exec_cmd(cs .. " ipc call picker open"))  -- caelestia region screenshot (was rofi-screenshot.sh)
+hl.bind("Print",               hl.dsp.exec_cmd("~/.local/bin/screenshot.sh region"))
+hl.bind(mod .. " + Print",     hl.dsp.exec_cmd("~/.local/bin/screenshot.sh full"))
 hl.bind(mod .. " + CTRL + S",  hl.dsp.exec_cmd("kitty --config ~/.config/kitty/otter.conf --class otter -e ~/.cargo/bin/otter-launcher sys"))
 hl.bind(mod .. " + slash",     hl.dsp.exec_cmd("kitty --config ~/.config/kitty/otter.conf --class otter -e ~/.cargo/bin/otter-launcher ws"))
 hl.bind(mod .. " + P",         hl.dsp.exec_cmd("kitty --config ~/.config/kitty/otter.conf --class otter -e ~/.cargo/bin/otter-launcher pj"))
@@ -251,6 +254,7 @@ hl.bind(mod .. " + mouse:273",  hl.dsp.window.resize(), { mouse = true })
 hl.bind(mod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprctl reload"))
 hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload"))
 hl.bind(mod .. " + Delete",    hl.dsp.exit())
+hl.bind(mod .. " + I",         hl.dsp.exec_cmd("killall -SIGUSR1 waybar"))  -- toggle bar (zen)
 
 -- Resize submap
 hl.bind(mod .. " + R", hl.dsp.submap("resize"))
