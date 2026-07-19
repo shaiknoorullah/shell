@@ -86,6 +86,11 @@ prefix = "md"
 cmd = "/home/devsupreme/.config/otter-launcher/scripts/otter-media.sh"
 
 [[modules]]
+description = "  youtube music"
+prefix = "ym"
+cmd = "/home/devsupreme/.config/otter-launcher/scripts/otter-ytm.sh"
+
+[[modules]]
 description = "  projects"
 prefix = "pj"
 cmd = "/home/devsupreme/.config/otter-launcher/scripts/otter-projects.sh"
