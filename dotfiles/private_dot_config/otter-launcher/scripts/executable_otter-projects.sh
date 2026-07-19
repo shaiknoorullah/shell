@@ -58,6 +58,12 @@ chosen="$(echo "$projects" | fzf --header=$'󰉋 projects')"
 project_name="$(sed 's/^[^ ]* *//' <<<"$chosen")"
 project_path="$PROJECTS_DIR/$project_name"
 
+# Record the active project for waybar-project.sh (adhd waybar module).
+# Only reached for a real selection: the [[ -z "$chosen" ]] guard above
+# already exits on empty/abort, and $project_name is the bare directory
+# name under ~/work/ (matches what waybar-project.sh looks up).
+mkdir -p "$HOME/.cache/adhd"; printf '%s' "$project_name" > "$HOME/.cache/adhd/active-project"
+
 # Sub-menu: choose which application to open the project with. Same
 # three actions + open commands as rofi-projects.sh (VS Code / kitty /
 # xdg-open); GUI launches are detached with setsid -f per the otter
